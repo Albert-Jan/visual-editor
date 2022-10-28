@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../../../blocks/models/indent-buttons-type.enum.dart';
 import '../../../controller/controllers/editor-controller.dart';
-import '../../../documents/models/attributes/attributes-aliases.model.dart';
 import '../../../documents/models/attributes/attributes.model.dart';
 import '../../../documents/services/attribute.utils.dart';
 import '../../../shared/models/editor-icon-theme.model.dart';
 import '../toolbar.dart';
 
+// Button in the toolbar used to indent or unindent a selected area.
 class IndentButton extends StatefulWidget {
   final IconData icon;
   final double iconSize;
   final EditorController controller;
-  // TODO enum
-  final bool isIncrease;
+  final IndentButtonsTypeE type;
   final EditorIconThemeM? iconTheme;
   final double buttonsSpacing;
 
@@ -20,7 +20,7 @@ class IndentButton extends StatefulWidget {
     required this.icon,
     required this.controller,
     required this.buttonsSpacing,
-    required this.isIncrease,
+    required this.type,
     this.iconSize = defaultIconSize,
     this.iconTheme,
     Key? key,
@@ -61,31 +61,34 @@ class _IndentButtonState extends State<IndentButton> {
         .getSelectionStyle()
         .attributes?[AttributesM.indent.key];
 
-    // No Styling
+    // If it's not indented and the button is indent add indent level 1.
     if (indent == null) {
-      if (widget.isIncrease) {
-        widget.controller.formatSelection(AttributesAliasesM.indentL1);
+      if (widget.type == IndentButtonsTypeE.indent) {
+        widget.controller.formatSelection(
+          AttributeUtils.getIndentLevel(1),
+        );
       }
       return;
     }
 
-    // Prevent decrease bellow 1
-    if (indent.value == 1 && !widget.isIncrease) {
+    // Prevent decrease bellow 1 when un-indenting and indent level is 1.
+    // (!) Don't remove, otherwise it is going to return a red screen error when un-indenting multiple times.
+    if (indent.value == 1 && widget.type == IndentButtonsTypeE.unindent) {
       widget.controller.formatSelection(
-        AttributeUtils.clone(AttributesAliasesM.indentL1, null),
+        AttributeUtils.clone(AttributeUtils.getIndentLevel(1), null),
       );
       return;
     }
 
-    // Increase
-    if (widget.isIncrease) {
+    // Increase indent value when the button is indenting.
+    if (widget.type == IndentButtonsTypeE.indent) {
       widget.controller.formatSelection(
         AttributeUtils.getIndentLevel(indent.value + 1),
       );
       return;
     }
 
-    // Decrease
+    // Decrease when un-indenting.
     widget.controller.formatSelection(
       AttributeUtils.getIndentLevel(indent.value - 1),
     );

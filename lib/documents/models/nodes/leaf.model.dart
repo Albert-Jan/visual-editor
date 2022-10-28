@@ -110,7 +110,7 @@ abstract class LeafM extends NodeM {
     }
 
     if (prev != null) {
-      prev.adjust();
+      prev.combineBlocks();
     }
   }
 
@@ -124,7 +124,7 @@ abstract class LeafM extends NodeM {
 
   // Adjust this text node by merging it with adjacent nodes if they share the same style.
   @override
-  void adjust() {
+  void combineBlocks() {
     if (this is EmbedM) {
       // Embed nodes cannot be merged with text nor other embeds.
       // In fact, there could be no two adjacent embeds on the same line
@@ -195,7 +195,7 @@ abstract class LeafM extends NodeM {
       applyStyle(style);
     }
 
-    adjust();
+    combineBlocks();
   }
 
   // Isolates a new leaf starting at [index] with specified [length].

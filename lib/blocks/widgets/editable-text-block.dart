@@ -27,7 +27,7 @@ class EditableTextBlock extends StatelessWidget {
   final List<MarkerM> hoveredMarkers;
   final EditorStylesM? styles;
   final bool hasFocus;
-  bool isCodeBlock = false;
+  final bool isCodeBlock;
   final LinkActionPicker linkActionPicker;
   final Map<int, int> indentLevelCounts;
   final Function(int, bool) onCheckboxTap;
@@ -70,8 +70,11 @@ class EditableTextBlock extends StatelessWidget {
       block: block,
       textDirection: textDirection,
       padding: verticalSpacing,
-      decoration:
-          _getDecorationForBlock(block, styles) ?? const BoxDecoration(),
+      decoration: _getDecorationForBlock(
+            block,
+            styles,
+          ) ??
+          const BoxDecoration(),
       isCodeBlock: isCodeBlock,
       state: _state,
       children: _blockLines(
@@ -100,14 +103,16 @@ class EditableTextBlock extends StatelessWidget {
     return null;
   }
 
+  // More lines grouped together forms a block.
   List<Widget> _blockLines(
     BuildContext context,
     Map<int, int> indentLevelCounts,
   ) {
     final styles = _state.styles.styles;
-    final count = block.children.length;
+    final blockLength = block.children.length;
     final children = <Widget>[];
     var index = 0;
+    final indentWidth = _getIndentWidth();
 
     for (final line in Iterable.castFrom<dynamic, LineM>(block.children)) {
       index++;
@@ -119,7 +124,7 @@ class EditableTextBlock extends StatelessWidget {
           line,
           index,
           indentLevelCounts,
-          count,
+          blockLength,
         ),
         underlyingText: TextLine(
           line: line,
@@ -128,11 +133,11 @@ class EditableTextBlock extends StatelessWidget {
           linkActionPicker: linkActionPicker,
           state: _state,
         ),
-        indentWidth: _getIndentWidth(),
+        indentWidth: indentWidth,
         verticalSpacing: _getSpacingForLine(
           line,
           index,
-          count,
+          blockLength,
           styles,
         ),
         textDirection: textDirection,
@@ -160,32 +165,35 @@ class EditableTextBlock extends StatelessWidget {
     );
   }
 
-  // Lines that are part of blocks might have also a dedicated content type
+  // Lines that are part of blocks might have also a dedicated content type before them.
+  // That content is called leading. The types of leading's are: ordered lists, unordered lists,
+  // checked, unchecked and code blocks.
   Widget? _lineLeadingWidget(
     BuildContext context,
     LineM line,
     int index,
     Map<int, int> indentLevelCounts,
-    int count,
+    int blockLength,
   ) {
     final styles = _state.styles.styles;
-    final attrs = line.style.attributes;
-    final hasAttrs = line.style.attributes != null;
+    final lineStyleAttrs = line.style.attributes;
+    final hasLineStyleAttrs = line.style.attributes != null;
 
-    if (hasAttrs) {
-      if (attrs![AttributesM.list.key] == AttributesAliasesM.ol) {
+    if (hasLineStyleAttrs) {
+      // Ordered list
+      if (lineStyleAttrs![AttributesM.list.key] == AttributesAliasesM.ol) {
         return NumberPoint(
-          index: index,
+          blockLength: blockLength,
           indentLevelCounts: indentLevelCounts,
-          count: count,
-          style: styles.leading!.style,
-          attrs: attrs,
-          width: 32,
-          padding: 8,
+          textStyle: styles.leading!.style,
+          attrs: lineStyleAttrs,
+          containerWidth: 32,
+          endPadding: 8,
         );
       }
 
-      if (attrs[AttributesM.list.key] == AttributesAliasesM.ul) {
+      // Unordered list
+      if (lineStyleAttrs[AttributesM.list.key] == AttributesAliasesM.ul) {
         return BulletPoint(
           style: styles.leading!.style.copyWith(
             fontWeight: FontWeight.bold,
@@ -194,7 +202,8 @@ class EditableTextBlock extends StatelessWidget {
         );
       }
 
-      if (attrs[AttributesM.list.key] == AttributesAliasesM.checked) {
+      // Checked
+      if (lineStyleAttrs[AttributesM.list.key] == AttributesAliasesM.checked) {
         return CheckboxPoint(
           size: 14,
           value: true,
@@ -204,7 +213,9 @@ class EditableTextBlock extends StatelessWidget {
         );
       }
 
-      if (attrs[AttributesM.list.key] == AttributesAliasesM.unchecked) {
+      // Unchecked
+      if (lineStyleAttrs[AttributesM.list.key] ==
+          AttributesAliasesM.unchecked) {
         return CheckboxPoint(
           size: 14,
           value: false,
@@ -214,21 +225,22 @@ class EditableTextBlock extends StatelessWidget {
         );
       }
 
-      if (attrs.containsKey(AttributesM.codeBlock.key)) {
+      // Code Block
+      if (lineStyleAttrs.containsKey(AttributesM.codeBlock.key)) {
         return NumberPoint(
-          index: index,
+          blockLength: blockLength,
           indentLevelCounts: indentLevelCounts,
-          count: count,
-          style: styles.code!.style.copyWith(
+          textStyle: styles.code!.style.copyWith(
             color: styles.code!.style.color!.withOpacity(0.4),
           ),
-          width: 32,
-          attrs: attrs,
-          padding: 16,
-          withDot: false,
+          containerWidth: 32,
+          attrs: lineStyleAttrs,
+          endPadding: 16,
+          hasDotAfterNumber: false,
         );
       }
     }
+
     return null;
   }
 
@@ -237,9 +249,10 @@ class EditableTextBlock extends StatelessWidget {
     final hasAttrs = block.style.attributes != null;
     final indent = attrs?[AttributesM.indent.key];
     var extraIndent = 0.0;
+    const indentBaseWidthValue = 16.0;
 
     if (indent != null && indent.value != null) {
-      extraIndent = 16.0 * indent.value;
+      extraIndent = indentBaseWidthValue * indent.value;
     }
 
     if (hasAttrs && attrs!.containsKey(AttributesM.blockQuote.key)) {
@@ -249,6 +262,7 @@ class EditableTextBlock extends StatelessWidget {
     var baseIndent = 0.0;
 
     if (hasAttrs) {
+      // Lists or code blocks
       if (attrs!.containsKey(AttributesM.list.key) ||
           attrs.containsKey(AttributesM.codeBlock.key)) {
         baseIndent = 32.0;
@@ -261,7 +275,7 @@ class EditableTextBlock extends StatelessWidget {
   VerticalSpacing _getSpacingForLine(
     LineM node,
     int index,
-    int count,
+    int blockLength,
     EditorStylesM? defaultStyles,
   ) {
     var top = 0.0, bottom = 0.0;
@@ -315,7 +329,7 @@ class EditableTextBlock extends StatelessWidget {
         top = 0.0;
       }
 
-      if (index == count) {
+      if (index == blockLength) {
         bottom = 0.0;
       }
     }

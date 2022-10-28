@@ -35,13 +35,4 @@ class AttributesAliasesM {
 
   // "attributes":{"direction":"rtl"}
   static AttributeM<String?> get rtl => DirectionAttributeM('rtl');
-
-  // "attributes":{"indent":1"}
-  static AttributeM<int?> get indentL1 => IndentAttributeM(level: 1);
-
-  // "attributes":{"indent":2"}
-  static AttributeM<int?> get indentL2 => IndentAttributeM(level: 2);
-
-  // "attributes":{"indent":3"}
-  static AttributeM<int?> get indentL3 => IndentAttributeM(level: 3);
 }

@@ -5,12 +5,12 @@ import '../../shared/state/editor.state.dart';
 import 'link-action-menu.enum.dart';
 
 // Used internally by widget layer.
-typedef LinkActionPicker = Future<LinkMenuAction> Function(
+typedef LinkActionPicker = Future<LinkMenuActionE> Function(
   NodeM linkNode,
   EditorState state,
 );
 
-typedef LinkActionPickerDelegate = Future<LinkMenuAction> Function(
+typedef LinkActionPickerDelegate = Future<LinkMenuActionE> Function(
   BuildContext context,
   String link,
   NodeM node,

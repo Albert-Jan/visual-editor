@@ -97,7 +97,7 @@ abstract class NodeM extends LinkedListEntry<NodeM> {
     super.unlink();
   }
 
-  void adjust() {
+  void combineBlocks() {
     /* no-op */
   }
 

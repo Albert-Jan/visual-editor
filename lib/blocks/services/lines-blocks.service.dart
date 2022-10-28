@@ -29,7 +29,8 @@ class LinesBlocksService {
   // Nodes are defined in the delta json using new line chars "\n"
   // An editable text line is composed of a underlying text line (text spans)
   // and the editable text line wrapper (which renders text selection, markers and highlights).
-  EditableTextLineWidgetRenderer getEditableTextLineFromNode(LineM node, EditorState state) {
+  EditableTextLineWidgetRenderer getEditableTextLineFromNode(
+      LineM node, EditorState state) {
     final editor = state.refs.editorState;
 
     // Text spans with text styling from flutter
@@ -278,7 +279,7 @@ class LinesBlocksService {
     }
   }
 
-  Future<LinkMenuAction> _linkActionPicker(
+  Future<LinkMenuActionE> _linkActionPicker(
       NodeM linkNode, EditorState state) async {
     final hasAttr = linkNode.style.attributes != null;
     final link =

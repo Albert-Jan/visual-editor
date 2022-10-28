@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:i18n_extension/i18n_widget.dart';
 
+import '../../blocks/models/indent-buttons-type.enum.dart';
 import '../../controller/controllers/editor-controller.dart';
 import '../../documents/models/attributes/attributes-aliases.model.dart';
 import '../../documents/models/attributes/attributes.model.dart';
@@ -452,7 +453,7 @@ class EditorToolbar extends StatelessWidget implements PreferredSizeWidget {
             icon: Icons.format_indent_increase,
             iconSize: toolbarIconSize,
             controller: controller,
-            isIncrease: true,
+            type: IndentButtonsTypeE.indent,
             buttonsSpacing: toolbarSectionSpacing,
             iconTheme: iconTheme,
           ),
@@ -462,7 +463,7 @@ class EditorToolbar extends StatelessWidget implements PreferredSizeWidget {
             buttonsSpacing: toolbarSectionSpacing,
             iconSize: toolbarIconSize,
             controller: controller,
-            isIncrease: false,
+            type: IndentButtonsTypeE.unindent,
             iconTheme: iconTheme,
           ),
         if (showDividers && isButtonGroupShown[4] && isButtonGroupShown[5])

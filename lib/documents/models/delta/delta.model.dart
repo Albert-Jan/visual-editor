@@ -144,14 +144,13 @@ class DeltaM {
   static DeltaM fromJson(
     List data, {
     DataDecoder? dataDecoder,
-  }) {
-    return DeltaM._(data
-        .map((op) => OperationM.fromJson(
-              op,
-              dataDecoder: dataDecoder,
-            ))
-        .toList());
-  }
+  }) =>
+      DeltaM._(data
+          .map((op) => OperationM.fromJson(
+                op,
+                dataDecoder: dataDecoder,
+              ))
+          .toList());
 
   // Returns list of operations in this delta.
   List<OperationM> toList() => List.from(_operations);
@@ -272,7 +271,8 @@ class DeltaM {
       }
 
       if (lastOp.isDelete && operation.isInsert) {
-        index -= 1; // Always insert before deleting
+        // Always insert before deleting
+        index -= 1;
         final nLastOp = (index > 0) ? _operations.elementAt(index - 1) : null;
 
         if (nLastOp == null) {

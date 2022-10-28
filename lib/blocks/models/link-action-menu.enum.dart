@@ -1,5 +1,5 @@
 // List of possible actions returned from [LinkActionPickerDelegate].
-enum LinkMenuAction {
+enum LinkMenuActionE {
   // Launch the link
   launch,
 

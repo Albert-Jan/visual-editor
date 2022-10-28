@@ -1,29 +1,14 @@
 import '../../markers/models/marker.model.dart';
 import '../models/attribute.model.dart';
-import '../models/attributes/attributes-aliases.model.dart';
 import '../models/attributes/attributes-registry.const.dart';
 import '../models/attributes/styling-attributes.dart';
 
 // Attributes defined the characteristics of text.
 // The delta document stores attributes for each operation.
 class AttributeUtils {
-  static AttributeM<int?> getIndentLevel(int? level) {
-    if (level == 1) {
-      return AttributesAliasesM.indentL1;
-    }
-
-    if (level == 2) {
-      return AttributesAliasesM.indentL2;
-    }
-
-    if (level == 3) {
-      return AttributesAliasesM.indentL3;
-    }
-
-    return IndentAttributeM(
-      level: level,
-    );
-  }
+  static AttributeM<int?> getIndentLevel(int? level) => IndentAttributeM(
+        level: level,
+      );
 
   // Given a key and a value it creates an Attribute model
   static AttributeM? fromKeyValue(String key, dynamic value) {
@@ -52,13 +37,11 @@ class AttributeUtils {
     return order;
   }
 
-  static AttributeM clone(AttributeM origin, dynamic value) {
-    return AttributeM(
-      origin.key,
-      origin.scope,
-      value,
-    );
-  }
+  static AttributeM clone(AttributeM origin, dynamic value) => AttributeM(
+        origin.key,
+        origin.scope,
+        value,
+      );
 
   // Converts raw delta json to markers model
   // Markers have additional nested metadata assigned to the value property.

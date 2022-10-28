@@ -11,6 +11,18 @@ class OperationM {
   // Default data decoder which simply passes through the original value.
   static Object? _passThroughDataDecoder(Object? data) => data;
 
+  // Key of this operation.
+  // Can be "insert", "delete" or "retain".
+  final String key;
+
+  // TODO Do we really want optional value here? Should be guaranteed with fail safe to zero.
+  // Length of this operation.
+  final int? length;
+
+  // Payload of "insert" operation.
+  // For other types is set to empty string.
+  final Object? data;
+
   OperationM(
     this.key,
     this.length,
@@ -40,10 +52,10 @@ class OperationM {
   factory OperationM.retain(int? length, [Map<String, dynamic>? attributes]) =>
       OperationM(OperationM.retainKey, length, '', attributes);
 
+  static const String deleteKey = 'delete';
+
   // TODO Move to enum
   static const String insertKey = 'insert';
-
-  static const String deleteKey = 'delete';
 
   // Retains length of characters and optionally applies attributes.
   // This is useful when you want to apply changes on the same delta without progressing to the next operation.
@@ -53,22 +65,31 @@ class OperationM {
 
   static const List<String> _validKeys = [insertKey, deleteKey, retainKey];
 
-  // Key of this operation.
-  // Can be "insert", "delete" or "retain".
-  final String key;
+  bool get isDelete => key == OperationM.deleteKey;
 
-  // TODO Dow really woant optional value here? Should be guaranteed with fail safe to zero.
-  // Length of this operation.
-  final int? length;
+  bool get isInsert => key == OperationM.insertKey;
 
-  // Payload of "insert" operation.
-  // For other types is set to empty string.
-  final Object? data;
+  bool get isRetain => key == OperationM.retainKey;
 
   // Rich-text attributes set by this operation, can be `null`.
   Map<String, dynamic>? get attributes =>
       _attributes == null ? null : Map<String, dynamic>.from(_attributes!);
   final Map<String, dynamic>? _attributes;
+
+  // Returns value of this operation.
+  // For insert operations this returns text, for delete and retain - length.
+  dynamic get value => (key == OperationM.insertKey) ? data : length;
+
+  // E.g. is plain text.
+  bool get isPlain => _attributes == null || _attributes!.isEmpty;
+
+  // Operation sets at least one attribute.
+  bool get isNotPlain => !isPlain;
+
+  // An operation is considered empty if its [length] is equal to `0`.
+  bool get isEmpty => length == 0;
+
+  bool get isNotEmpty => length! > 0;
 
   // Creates new [Operation] from JSON payload.
   // If `dataDecoder` parameter is not null then it is used to additionally decode the operation's data object. Only applied to insert operations.
@@ -87,9 +108,11 @@ class OperationM {
       );
     } else if (map.containsKey(OperationM.deleteKey)) {
       final int? length = map[OperationM.deleteKey];
+
       return OperationM(OperationM.deleteKey, length, '', null);
     } else if (map.containsKey(OperationM.retainKey)) {
       final int? length = map[OperationM.retainKey];
+
       return OperationM(
         OperationM.retainKey,
         length,
@@ -107,27 +130,6 @@ class OperationM {
     return json;
   }
 
-  // Returns value of this operation.
-  // For insert operations this returns text, for delete and retain - length.
-  dynamic get value => (key == OperationM.insertKey) ? data : length;
-
-  bool get isDelete => key == OperationM.deleteKey;
-
-  bool get isInsert => key == OperationM.insertKey;
-
-  bool get isRetain => key == OperationM.retainKey;
-
-  // E.g. is plain text.
-  bool get isPlain => _attributes == null || _attributes!.isEmpty;
-
-  // Operation sets at least one attribute.
-  bool get isNotPlain => !isPlain;
-
-  // An operation is considered empty if its [length] is equal to `0`.
-  bool get isEmpty => length == 0;
-
-  bool get isNotEmpty => length! > 0;
-
   @override
   bool operator ==(other) {
     if (identical(this, other)) return true;
@@ -143,7 +145,7 @@ class OperationM {
   bool hasAttribute(String name) =>
       isNotPlain && _attributes!.containsKey(name);
 
-  // other operation has the same attributes as this one.
+  // Other operation has the same attributes as this one.
   bool hasSameAttributes(OperationM other) {
     // Treat null and empty equal
     if ((_attributes?.isEmpty ?? true) &&

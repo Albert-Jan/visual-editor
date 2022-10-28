@@ -203,7 +203,7 @@ class LineM extends ContainerM<LeafM?> {
       // Remember reference before un-linking.
       final block = parent!;
       unlink();
-      block.adjust();
+      block.combineBlocks();
     }
   }
 
@@ -432,7 +432,7 @@ class LineM extends ContainerM<LeafM?> {
     }
 
     _wrap(block);
-    block.adjust();
+    block.combineBlocks();
   }
 
   // Wraps this line with new parent block.
@@ -475,7 +475,7 @@ class LineM extends ContainerM<LeafM?> {
       unlink();
       block.insertBefore(this);
     }
-    block.adjust();
+    block.combineBlocks();
   }
 
   LineM _getNextLine(int index) {

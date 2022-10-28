@@ -8,7 +8,7 @@ import '../models/link-action-menu.enum.dart';
 import '../widgets/links/cupertino-link-action.dart.dart';
 import '../widgets/links/material-link-action.dart.dart';
 
-Future<LinkMenuAction> defaultLinkActionPickerDelegate(
+Future<LinkMenuActionE> defaultLinkActionPickerDelegate(
   BuildContext context,
   String link,
   NodeM node,
@@ -27,15 +27,15 @@ Future<LinkMenuAction> defaultLinkActionPickerDelegate(
         'be invoked for $defaultTargetPlatform',
       );
 
-      return LinkMenuAction.none;
+      return LinkMenuActionE.none;
   }
 }
 
-Future<LinkMenuAction> _showCupertinoLinkMenu(
+Future<LinkMenuActionE> _showCupertinoLinkMenu(
   BuildContext context,
   String link,
 ) async {
-  final result = await showCupertinoModalPopup<LinkMenuAction>(
+  final result = await showCupertinoModalPopup<LinkMenuActionE>(
     context: context,
     builder: (ctx) {
 
@@ -45,30 +45,30 @@ Future<LinkMenuAction> _showCupertinoLinkMenu(
           CupertinoLinkAction(
             title: 'Open',
             icon: Icons.language_sharp,
-            onPressed: () => Navigator.of(context).pop(LinkMenuAction.launch),
+            onPressed: () => Navigator.of(context).pop(LinkMenuActionE.launch),
           ),
           CupertinoLinkAction(
             title: 'Copy',
             icon: Icons.copy_sharp,
-            onPressed: () => Navigator.of(context).pop(LinkMenuAction.copy),
+            onPressed: () => Navigator.of(context).pop(LinkMenuActionE.copy),
           ),
           CupertinoLinkAction(
             title: 'Remove',
             icon: Icons.link_off_sharp,
-            onPressed: () => Navigator.of(context).pop(LinkMenuAction.remove),
+            onPressed: () => Navigator.of(context).pop(LinkMenuActionE.remove),
           ),
         ],
       );
     },
   );
-  return result ?? LinkMenuAction.none;
+  return result ?? LinkMenuActionE.none;
 }
 
-Future<LinkMenuAction> _showMaterialMenu(
+Future<LinkMenuActionE> _showMaterialMenu(
   BuildContext context,
   String link,
 ) async {
-  final result = await showModalBottomSheet<LinkMenuAction>(
+  final result = await showModalBottomSheet<LinkMenuActionE>(
     context: context,
     builder: (ctx) {
 
@@ -78,22 +78,22 @@ Future<LinkMenuAction> _showMaterialMenu(
           MaterialLinkAction(
             title: 'Open'.i18n,
             icon: Icons.language_sharp,
-            onPressed: () => Navigator.of(context).pop(LinkMenuAction.launch),
+            onPressed: () => Navigator.of(context).pop(LinkMenuActionE.launch),
           ),
           MaterialLinkAction(
             title: 'Copy'.i18n,
             icon: Icons.copy_sharp,
-            onPressed: () => Navigator.of(context).pop(LinkMenuAction.copy),
+            onPressed: () => Navigator.of(context).pop(LinkMenuActionE.copy),
           ),
           MaterialLinkAction(
             title: 'Remove'.i18n,
             icon: Icons.link_off_sharp,
-            onPressed: () => Navigator.of(context).pop(LinkMenuAction.remove),
+            onPressed: () => Navigator.of(context).pop(LinkMenuActionE.remove),
           ),
         ],
       );
     },
   );
 
-  return result ?? LinkMenuAction.none;
+  return result ?? LinkMenuActionE.none;
 }

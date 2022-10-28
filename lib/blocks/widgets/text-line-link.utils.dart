@@ -91,18 +91,18 @@ class TextLineLinkUtils {
     final action = await linkActionPicker(node, state);
 
     switch (action) {
-      case LinkMenuAction.launch:
+      case LinkMenuActionE.launch:
         _tapLink(link, state);
         break;
 
-      case LinkMenuAction.copy:
+      case LinkMenuActionE.copy:
         // ignore: unawaited_futures
         Clipboard.setData(
           ClipboardData(text: link),
         );
         break;
 
-      case LinkMenuAction.remove:
+      case LinkMenuActionE.remove:
         final range = getLinkRange(node);
         state.refs.editorController.formatText(
           range.start,
@@ -111,7 +111,7 @@ class TextLineLinkUtils {
         );
         break;
 
-      case LinkMenuAction.none:
+      case LinkMenuActionE.none:
         break;
     }
   }

@@ -170,11 +170,6 @@ class EditorController {
     }
   }
 
-  // TODO Deprecate (no longer needed)
-  factory EditorController.basic() => EditorController(
-        document: DocumentM(),
-      );
-
   // Safely pass the state from the controller to the buttons without the public having access to the state.
   // Read more in EditorStateReceiver doc comment.
   void setStateInEditorStateReceiver(EditorStateReceiver receiver) {
@@ -386,7 +381,7 @@ class EditorController {
     }
   }
 
-  // TODO Add comment
+  // TODO Add better comment
   // Based on the executed change, we reset the text selection range (Ex: deleting text will decrease the text selection).
   void formatText(
     int index,
@@ -424,13 +419,11 @@ class EditorController {
   }
 
   // Applies an attribute to a selection of text
-  void formatSelection(AttributeM? attribute) {
-    formatText(
-      selection.start,
-      selection.end - selection.start,
-      attribute,
-    );
-  }
+  void formatSelection(AttributeM? attribute) => formatText(
+        selection.start,
+        selection.end - selection.start,
+        attribute,
+      );
 
   // Only attributes applied to all characters within this range are included in the result.
   StyleM getSelectionStyle() => document

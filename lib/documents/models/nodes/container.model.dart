@@ -71,7 +71,7 @@ abstract class ContainerM<T extends NodeM?> extends NodeM {
     }
 
     // In case newParent already had children we need to make sure combined list is optimized.
-    if (last != null) last.adjust();
+    if (last != null) last.combineBlocks();
   }
 
   // Queries the child Node at offset in this container.

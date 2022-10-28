@@ -58,7 +58,5 @@ class NavMenu extends StatelessWidget {
   Widget _divider(Size size) => Divider(
         thickness: 2,
         color: Colors.white.withOpacity(0.1),
-        // indent: size.width * 0.1,
-        // endIndent: size.width * 0.1,
       );
 }
