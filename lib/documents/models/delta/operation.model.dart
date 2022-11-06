@@ -1,6 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:quiver/core.dart';
 
+import '../../../shared/utils/shared.utils.dart';
+import '../key-types.enum.dart';
 import 'data-decoder.type.dart';
 
 const _attributeEquality = DeepCollectionEquality();
@@ -40,24 +42,23 @@ class OperationM {
   factory OperationM.retain(int? length, [Map<String, dynamic>? attributes]) =>
       OperationM(OperationM.retainKey, length, '', attributes);
 
-  // TODO Move to enum
-  static const String insertKey = 'insert';
+  static String insertKey = enumToString(KeyTypesE.insert);
 
-  static const String deleteKey = 'delete';
+  static String deleteKey = enumToString(KeyTypesE.delete);
 
   // Retains length of characters and optionally applies attributes.
   // This is useful when you want to apply changes on the same delta without progressing to the next operation.
-  static const String retainKey = 'retain';
+  static String retainKey = enumToString(KeyTypesE.retain);
 
-  static const String attributesKey = 'attributes';
+  static String attributesKey = enumToString(KeyTypesE.attributes);
 
-  static const List<String> _validKeys = [insertKey, deleteKey, retainKey];
+  static final List<String> _validKeys = [insertKey, deleteKey, retainKey];
 
   // Key of this operation.
   // Can be "insert", "delete" or "retain".
   final String key;
 
-  // TODO Dow really woant optional value here? Should be guaranteed with fail safe to zero.
+  // TODO Do we really want optional value here? Should be guaranteed with fail safe to zero.
   // Length of this operation.
   final int? length;
 

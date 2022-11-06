@@ -16,3 +16,6 @@ bool areListsEqual(var list1, var list2) {
 
   return true;
 }
+
+// Translates enum values to string
+String enumToString(_enum) => _enum.toString().split('.')[1];
