@@ -433,6 +433,43 @@ class EditorController {
       )
       .mergeAll(toggledStyle);
 
+  // Increases or decreases the indent of the current selection by 1.
+  void indentSelection(bool isIncrease) {
+    final indent = getSelectionStyle().attributes?[AttributesM.indent.key];
+
+    // If it's not indented and the button is indent add indent level 1.
+    if (indent == null) {
+      if (isIncrease) {
+        formatSelection(
+          AttributeUtils.getIndentLevel(1),
+        );
+      }
+      return;
+    }
+
+    // Prevent decrease bellow 1 when un-indenting and indent level is 1.
+    // (!) Don't remove, otherwise it is going to return a red screen error when un-indenting multiple times.
+    if (indent.value == 1 && !isIncrease) {
+      formatSelection(
+        AttributeUtils.clone(AttributeUtils.getIndentLevel(1), null),
+      );
+      return;
+    }
+
+    // Increase indent value when the button is indenting.
+    if (isIncrease) {
+      formatSelection(
+        AttributeUtils.getIndentLevel(indent.value + 1),
+      );
+      return;
+    }
+
+    // Decrease when un-indenting.
+    formatSelection(
+      AttributeUtils.getIndentLevel(indent.value - 1),
+    );
+  }
+
   // Returns all styles for each node within selection
   List<PasteStyleM> getAllIndividualSelectionStyles() {
     final styles = document.collectAllIndividualStyles(
