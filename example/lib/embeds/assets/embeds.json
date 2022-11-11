@@ -1,0 +1,100 @@
+[
+  {
+    "insert": "Embeds"
+  },
+  {
+    "insert": "\n",
+    "attributes": {
+      "header": 1
+    }
+  },
+  {
+    "insert": "\nImage embed:\n"
+  },
+  {
+    "insert": {
+      "image": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg"
+    },
+    "attributes": {
+      "width": "500",
+      "style": "display: block; margin: auto;"
+    }
+  },
+  {
+    "insert": "\n",
+    "attributes": {
+      "header": 1
+    }
+  },
+  {
+    "insert": "\n"
+  },
+  {
+    "insert": "Note!",
+    "attributes": {
+      "bold": true
+    }
+  },
+  {
+    "insert": " Copying the image to the clipboard will only result in getting the \"\nUnicode Character 'OBJECT REPLACEMENT CHARACTER' (U+FFFC)\" in the clipboard, this is a known issue.\n\nVideo embed:\n\nVideo embeds have 2 kinds of 3rd party players:\n\n1 - Video_player ("
+  },
+  {
+    "insert": "https://github.com/flutter/plugins/tree/master_archive/packages/video_player/video_player",
+    "attributes": {
+      "link": "https://github.com/flutter/plugins/tree/master_archive/packages/video_player/video_player"
+    }
+  },
+  {
+    "insert": ") for  all kinds of videos that are "
+  },
+  {
+    "insert": "not",
+    "attributes": {
+      "bold": true
+    }
+  },
+  {
+    "insert": " from Youtube.\n\n"
+  },
+  {
+    "insert": {
+      "video": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    }
+  },
+  {
+    "insert": "\n\n\n2 - youtube_player_flutter ("
+  },
+  {
+    "insert": "https://pub.dev/packages/youtube_player_flutter",
+    "attributes": {
+      "link": "https://pub.dev/packages/youtube_player_flutter"
+    }
+  },
+  {
+    "insert": ") "
+  },
+  {
+    "insert": "Only for youtube videos. ",
+    "attributes": {
+      "bold": true
+    }
+  },
+  {
+    "insert": "(Feature available only on mobile devices)",
+    "attributes": {
+      "bold": true,
+      "color": "#ef5350"
+    }
+  },
+  {
+    "insert": "\n\n"
+  },
+  {
+    "insert": {
+      "video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    }
+  },
+  {
+    "insert": "\nThe editor will automatically select the right video player based on the url submitted.\n\n"
+  }
+]

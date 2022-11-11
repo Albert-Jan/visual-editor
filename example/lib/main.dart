@@ -7,6 +7,7 @@ import 'developer/pages/delta-sandbox.page.dart';
 import 'developer/pages/multiple-editors.page.dart';
 import 'developer/pages/overwrite-controller.page.dart';
 import 'embeds/pages/custom-embeds.page.dart';
+import 'embeds/pages/embeds.page.dart';
 import 'interactions/pages/selection-menu.page.dart';
 import 'markers/pages/delete-markers.page.dart';
 import 'markers/pages/hide-markers.page.dart';
@@ -56,6 +57,7 @@ class DemoApp extends StatelessWidget {
 
           // Embeds
           '/custom-embeds': (context) => CustomEmbedsPage(),
+          '/embeds': (context) => EmbedsPage(),
 
           // Controller
           '/headings': (context) => HeadingsPage(),

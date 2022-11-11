@@ -94,6 +94,10 @@ const List<NavMenuCategoryM> NAV_MENU = [
     links: [
       // TODO Images & Video
       NavMenuLinkM(
+        title: 'Embeds',
+        route: '/embeds',
+      ),
+      NavMenuLinkM(
         title: 'Custom Embeds',
         route: '/custom-embeds',
       ),
