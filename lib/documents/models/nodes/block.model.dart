@@ -3,7 +3,7 @@ import 'container.model.dart';
 import 'line.model.dart';
 import 'node.model.dart';
 
-// Represents a group of adjacent Lines with the same block style.
+// Represents a group of adjacent lines with the same block style.
 // Block elements are:
 // - Blockquote
 // - Header
@@ -59,7 +59,7 @@ class BlockM extends ContainerM<LineM?> {
 
     if (!block.isLast && block.next is BlockM && next!.style == block.style) {
       (next as BlockM).moveChildToNewParent(block);
-      next.unlink(); // DOES NOTHING, RESEARCH MORE IF IT HAS ANY EFFECT.
+      next.unlink();
     }
   }
 

@@ -10,7 +10,6 @@ import '../../const/roman-numbers.const.dart';
 class NumberPoint extends StatelessWidget {
   final Map<int?, int> indentLevelCounts;
   final TextStyle textStyle;
-  final double containerWidth;
   final Map<String, AttributeM> attrs;
   final bool hasDotAfterNumber;
   final double endPadding;
@@ -19,7 +18,6 @@ class NumberPoint extends StatelessWidget {
   const NumberPoint({
     required this.indentLevelCounts,
     required this.textStyle,
-    required this.containerWidth,
     required this.attrs,
     required this.blockLength,
     this.hasDotAfterNumber = true,
@@ -33,7 +31,7 @@ class NumberPoint extends StatelessWidget {
 
     return Container(
       alignment: AlignmentDirectional.topEnd,
-      width: containerWidth,
+      width: 32,
       padding: EdgeInsetsDirectional.only(end: endPadding),
       child: Text('$olString${hasDotAfterNumber ? '.' : ''}', style: textStyle),
     );

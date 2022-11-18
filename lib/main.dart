@@ -14,12 +14,7 @@ import 'controller/services/editor-text.service.dart';
 import 'cursor/controllers/cursor.controller.dart';
 import 'cursor/controllers/floating-cursor.controller.dart';
 import 'cursor/services/cursor.service.dart';
-import 'documents/models/attribute.model.dart';
-import 'documents/models/attributes/attributes-aliases.model.dart';
-import 'documents/models/change-source.enum.dart';
 import 'documents/models/document.model.dart';
-import 'documents/models/nodes/block.model.dart';
-import 'documents/models/nodes/line.model.dart';
 import 'documents/services/document.service.dart';
 import 'editor/models/editor-cfg.model.dart';
 import 'editor/models/platform-dependent-styles.model.dart';
@@ -34,6 +29,7 @@ import 'inputs/services/clipboard.service.dart';
 import 'inputs/services/input-connection.service.dart';
 import 'inputs/services/keyboard-actions.service.dart';
 import 'inputs/services/keyboard.service.dart';
+import 'inputs/services/typing-shortcuts-service.dart';
 import 'inputs/widgets/editor-keyboard-listener.dart';
 import 'selection/controllers/selection-actions.controller.dart';
 import 'selection/services/selection-actions.service.dart';
@@ -41,6 +37,7 @@ import 'selection/services/text-selection.service.dart';
 import 'selection/widgets/text-gestures.dart';
 import 'shared/state/editor-state-receiver.dart';
 import 'shared/state/editor.state.dart';
+import 'shared/utils/shortcuts.utils.dart';
 
 // This is the main class of the Visual Editor.
 // There are 2 constructors available, one for controlling all the settings of the editor in precise detail.
@@ -154,6 +151,7 @@ class VisualEditorState extends State<VisualEditor>
   final _documentService = DocumentService();
   final _stylesService = StylesService();
   final _textValueService = TextValueService();
+  final _typingShortcutsService = TypingShortcutsService();
 
   SelectionActionsController? selectionActionsController;
   late FloatingCursorController _floatingCursorController;
@@ -503,7 +501,7 @@ class VisualEditorState extends State<VisualEditor>
       return KeyEventResult.ignored;
     }
 
-    // If the key is not pressed, but is released, do nothing.
+    // When the key is released, do nothing.
     if (event is! RawKeyDownEvent) {
       return KeyEventResult.ignored;
     }
@@ -516,120 +514,34 @@ class VisualEditorState extends State<VisualEditor>
 
     // Handle indenting blocks when pressing the tab key.
     if (event.logicalKey == LogicalKeyboardKey.tab) {
-      return _handleTabKey(event);
+      return _typingShortcutsService.handleTabKey(
+        widget.controller,
+        event,
+      );
     }
 
-    // Handle inserting lists when space is pressed following
-    // a list initiating phrase.
+    // Handle inserting lists when space is pressed following a list initiating phrase.
     if (event.logicalKey == LogicalKeyboardKey.space) {
-      return _handleSpaceKey(event);
+      return _typingShortcutsService.handleSpaceKey(
+        widget.controller,
+        event,
+      );
     }
 
     // Default
     return KeyEventResult.ignored;
   }
 
-  KeyEventResult _handleSpaceKey(RawKeyEvent event) {
-    final child = widget.controller.document
-        .queryChild(widget.controller.selection.baseOffset);
-    if (child.node == null) {
-      return KeyEventResult.ignored;
-    }
-
-    final line = child.node as LineM?;
-    if (line == null) {
-      return KeyEventResult.ignored;
-    }
-
-    // Get the first 2 chars of a line.
-    final text = line.getPlainText(0, 2);
-
-    const olKeyPhrase = '1.';
-    const ulKeyPhrase = '-';
-
-    if (text == olKeyPhrase) {
-      _updateSelectionForKeyPhrase(olKeyPhrase, AttributesAliasesM.ol);
-    } else if (text[0] == ulKeyPhrase) {
-      _updateSelectionForKeyPhrase(ulKeyPhrase, AttributesAliasesM.ul);
-    } else {
-      return KeyEventResult.ignored;
-    }
-
-    return KeyEventResult.handled;
-  }
-
-  void _updateSelectionForKeyPhrase(String phrase, AttributeM attribute) {
-    widget.controller
-      ..formatSelection(attribute)
-      ..replaceText(
-        widget.controller.selection.baseOffset - phrase.length,
-        phrase.length,
-        '',
-        null,
-      );
-
-    // It is unclear why the selection moves forward the edit distance.
-    // For indenting a bullet list we need to move the cursor with -1 and for ol with -2.
-    attribute == AttributesAliasesM.ol ? _moveCursor(-2) : _moveCursor(-1);
-  }
-
-  KeyEventResult _handleTabKey(RawKeyEvent event) {
-    final child = widget.controller.document
-        .queryChild(widget.controller.selection.baseOffset);
-    final node = child.node!;
-    final nodeParent = node.parent;
-
-    // TODO Understand when this is used.
-    if (child.node == null) {
-      return _insertTabCharacter();
-    }
-
-    if (nodeParent == null || nodeParent is! BlockM) {
-      return _insertTabCharacter();
-    }
-
-    // Ordered lists, unordered lists, checked type line.
-    if (nodeParent.style.containsKey(AttributesAliasesM.ol.key) ||
-        nodeParent.style.containsKey(AttributesAliasesM.ul.key) ||
-        nodeParent.style.containsKey(AttributesAliasesM.checked.key)) {
-      widget.controller.indentSelection(!event.isShiftPressed);
-      return KeyEventResult.handled;
-    }
-
-    if (node is! LineM || (node.isNotEmpty && node.first is! String)) {
-      return _insertTabCharacter();
-    }
-
-    if (node.isNotEmpty && (node.first as String).isNotEmpty) {
-      return _insertTabCharacter();
-    }
-
-    return _insertTabCharacter();
-  }
-
-  KeyEventResult _insertTabCharacter() {
-    widget.controller
-        .replaceText(widget.controller.selection.baseOffset, 0, '    ', null);
-    _moveCursor(4);
-    return KeyEventResult.handled;
-  }
-
-  void _moveCursor(int chars) {
-    final selection = widget.controller.selection;
-    widget.controller.updateSelection(
-      widget.controller.selection.copyWith(
-          baseOffset: selection.baseOffset + chars,
-          extentOffset: selection.baseOffset + chars),
-      ChangeSource.LOCAL,
-    );
-  }
-
-  Widget _hotkeysActions({required Widget child}) => Actions(
-        actions: _keyboardActionsService.getActions(
-          context,
-          widget._state,
+  Widget _hotkeysActions({required Widget child}) => Shortcuts(
+        shortcuts: shortcuts,
+        child: Actions(
+          actions: _keyboardActionsService.getActions(
+            context,
+            widget._state,
+            widget.controller,
+          ),
+          child: child,
         ),
-        child: child,
       );
 
   Widget _focusField({required Widget child}) => Focus(

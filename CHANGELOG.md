@@ -56,6 +56,8 @@ If you want to learn more about the specs, all tickets are available by followin
   * Added horizontal mouse scroll for toolbar.
   * Fixed the scroll controller which overlays over the toolbar buttons.
   * Fixed the toolbar stretching and irregular distance between buttons.
+* Fixed the wrong ordering number bug in ordered lists and code block.
+* Added hotkeys for styling actions (e.g.: ctrl + bold makes the selected text bold).
 
 ## [0.3.0] Architecture refactoring [#1](https://github.com/visual-space/visual-editor/issues/1)
 * Cleaning up editor.dart

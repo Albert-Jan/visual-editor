@@ -1,12 +1,18 @@
 import 'package:flutter/cupertino.dart';
 
+import '../../controller/controllers/editor-controller.dart';
 import '../../controller/services/editor-text.service.dart';
 import '../../editor/models/boundaries/character-boundary.model.dart';
 import '../../shared/state/editor.state.dart';
+import '../../shared/utils/intents.utils.dart';
+import '../controllers/apply-checklist.action.dart';
+import '../controllers/apply-header.action.dart';
 import '../controllers/copy-selection.action.dart';
 import '../controllers/delete-text.action.dart';
 import '../controllers/extend-selection-or-caret-position.action.dart';
+import '../controllers/indent-selection.action.dart';
 import '../controllers/select-all.action.dart';
+import '../controllers/toggle-text-style.action.dart';
 import '../controllers/update-text-selection-to-adjiacent-line.action.dart';
 import '../controllers/update-text-selection.action.dart';
 import '../models/base/text-boundary.model.dart';
@@ -43,6 +49,7 @@ class KeyboardActionsService {
   Map<Type, Action<Intent>> getActions(
     BuildContext context,
     EditorState state,
+    EditorController controller,
   ) =>
       <Type, Action<Intent>>{
         // === VARIOUS ===
@@ -145,6 +152,22 @@ class KeyboardActionsService {
           ),
           context,
         ),
+
+        // === INDENTATION ===
+
+        IndentSelectionIntent: IndentSelectionAction(controller),
+
+        // === TEXT STYLE ===
+
+        ToggleTextStyleIntent: ToggleTextStyleAction(controller),
+
+        // === CHECKLIST ===
+
+        ApplyCheckListIntent: ApplyCheckListAction(controller),
+
+        // === HEADER ===
+
+        ApplyHeaderIntent: ApplyHeaderAction(controller),
       };
 
   // === PRIVATE ===

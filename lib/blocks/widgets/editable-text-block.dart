@@ -187,7 +187,6 @@ class EditableTextBlock extends StatelessWidget {
           indentLevelCounts: indentLevelCounts,
           textStyle: styles.leading!.style,
           attrs: lineStyleAttrs,
-          containerWidth: 32,
           endPadding: 8,
         );
       }
@@ -233,7 +232,6 @@ class EditableTextBlock extends StatelessWidget {
           textStyle: styles.code!.style.copyWith(
             color: styles.code!.style.color!.withOpacity(0.4),
           ),
-          containerWidth: 32,
           attrs: lineStyleAttrs,
           endPadding: 16,
           hasDotAfterNumber: false,
@@ -249,10 +247,10 @@ class EditableTextBlock extends StatelessWidget {
     final hasAttrs = block.style.attributes != null;
     final indent = attrs?[AttributesM.indent.key];
     var extraIndent = 0.0;
-    const indentBaseWidthValue = 16.0;
+    const indentWidth = 16.0;
 
     if (indent != null && indent.value != null) {
-      extraIndent = indentBaseWidthValue * indent.value;
+      extraIndent = indentWidth * indent.value;
     }
 
     if (hasAttrs && attrs!.containsKey(AttributesM.blockQuote.key)) {
