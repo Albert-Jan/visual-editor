@@ -14,6 +14,8 @@ class OperationM {
   final String key;
 
   // Length of this operation.
+  // For example, one case is when you select 3 letters, the operation length will be 3.
+  // That is because I think that operations are applied for each letter in a selection.
   final int? length;
 
   // Payload of "insert" operation.
@@ -42,8 +44,12 @@ class OperationM {
 
   // Inserts text with optional attributes.
   factory OperationM.insert(dynamic data, [Map<String, dynamic>? attributes]) =>
-      OperationM(OperationM.insertKey, data is String ? data.length : 1, data,
-          attributes);
+      OperationM(
+        OperationM.insertKey,
+        data is String ? data.length : 1,
+        data,
+        attributes,
+      );
 
   // Retains length of characters and optionally applies attributes.
   factory OperationM.retain(int? length, [Map<String, dynamic>? attributes]) =>
@@ -72,7 +78,7 @@ class OperationM {
   // Default data decoder which simply passes through the original value.
   static Object? _passThroughDataDecoder(Object? data) => data;
 
-  // Creates new [Operation] from JSON payload.
+  // Creates new Operation from JSON payload.
   // If `dataDecoder` parameter is not null then it is used to additionally decode the operation's data object. Only applied to insert operations.
   static OperationM fromJson(Map data, {DataDecoder? dataDecoder}) {
     dataDecoder ??= _passThroughDataDecoder;
@@ -125,7 +131,7 @@ class OperationM {
   // Operation sets at least one attribute.
   bool get isNotPlain => !isPlain;
 
-  // An operation is considered empty if its [length] is equal to `0`.
+  // An operation is considered empty if its length is equal to `0`.
   bool get isEmpty => length == 0;
 
   bool get isNotEmpty => length! > 0;
@@ -152,7 +158,7 @@ class OperationM {
     if (_attributes != null && _attributes!.isNotEmpty) {
       final attrsHash = hashObjects(
         _attributes!.entries.map(
-              (e) => hash2(e.key, e.value),
+          (e) => hash2(e.key, e.value),
         ),
       );
 
@@ -167,8 +173,8 @@ class OperationM {
     final attr = attributes == null ? '' : ' + $attributes';
     final text = isInsert
         ? (data is String
-        ? (data as String).replaceAll('\n', '⏎')
-        : data.toString())
+            ? (data as String).replaceAll('\n', '⏎')
+            : data.toString())
         : '$length';
 
     return '$key⟨ $text ⟩$attr';

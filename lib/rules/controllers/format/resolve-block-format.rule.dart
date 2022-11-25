@@ -6,9 +6,10 @@ import '../../../documents/models/delta/delta.model.dart';
 import '../../../documents/models/delta/operation.model.dart';
 import '../../models/format-rule.model.dart';
 
-// Produces Delta with line-level attributes applied strictly to newline characters.
-class ResolveLineFormatRule extends FormatRuleM {
-  const ResolveLineFormatRule();
+// Produces Delta with BLOCK level attributes applied strictly to newline characters.
+// Some examples of those BLOCK level attributes are code block, indentation, ol, ul, etc.
+class ResolveBlockFormatRule extends FormatRuleM {
+  const ResolveBlockFormatRule();
 
   @override
   DeltaM? applyRule(
@@ -18,6 +19,7 @@ class ResolveLineFormatRule extends FormatRuleM {
     Object? data,
     AttributeM? attribute,
   }) {
+    // Don't change anything if the attribute scope is not BLOCK.
     if (attribute!.scope != AttributeScope.BLOCK) {
       return null;
     }
@@ -31,6 +33,7 @@ class ResolveLineFormatRule extends FormatRuleM {
       op = itr.next(len - cur);
       final opText = op.data is String ? op.data as String : '';
 
+      // If selection doesn't contain '\n', retain length of the operation.
       if (!opText.contains('\n')) {
         result.retain(op.length!);
         continue;
@@ -72,6 +75,7 @@ class ResolveLineFormatRule extends FormatRuleM {
 
     while (lf >= 0) {
       final actualStyle = attribute.toJson()..addEntries(removedBlocks);
+
       result
         ..retain(lf - offset)
         ..retain(1, actualStyle);
@@ -83,13 +87,12 @@ class ResolveLineFormatRule extends FormatRuleM {
       offset = lf + 1;
       lf = text.indexOf('\n', offset);
     }
+
     // Retain any remaining characters in text
     result.retain(text.length - offset);
 
     return result;
   }
-
-  // === PRIVATE ===
 
   Iterable<MapEntry<String, dynamic>> _getRemovedBlocks(
     AttributeM<dynamic> attribute,

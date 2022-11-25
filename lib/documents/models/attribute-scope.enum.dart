@@ -1,10 +1,12 @@
-// TODO Better document what the attribute scope does.
-// It's not immediately apparent what each onf of these scopes does.
-// As far as I can tell for now, they are used to restrict styles to line or inline level when inserting new characters.
+// TODO WIP - Better understanding required, might contain misunderstood information.
+// As far as I can tell for now, they are used to restrict applying styles to line or inline level.
 // Rules that apply to the line can't be applied inline.
+// For example ResolveBlockFormatRule is responsible for applying BLOCK styling attributes
+// like headings, code block, ol, ui, while ResolveInlineFormatRule is responsible for
+// applying bold, italics, underline etc. For a complete list check https://quilljs.com/docs/formats
 enum AttributeScope {
-  INLINE, // refer to https://quilljs.com/docs/formats/#inline
-  BLOCK, // refer to https://quilljs.com/docs/formats/#block
-  EMBEDS, // refer to https://quilljs.com/docs/formats/#embeds
-  IGNORE, // attributes that can be ignored
+  INLINE,
+  BLOCK,
+  EMBEDS,
+  IGNORE, // attributes that can be ignored. TODO Improve doc with an example.
 }

@@ -209,13 +209,14 @@ class LineM extends ContainerM<LeafM?> {
 
   // Returns style for specified text range.
   // Only attributes applied to all characters within this range are included in the result.
-  // Inline and line level attributes are handled separately, e.g.:
-  // - line attribute X is included in the result only if it exists for
+  // INLINE and BLOCK level attributes are handled separately, e.g.:
+  // - BLOCK attribute X is included in the result only if it exists for
   //   every line within this range (partially included lines are counted).
   // - inline attribute X is included in the result only if it exists
   //   for every character within this range (line-break characters excluded).
   // In essence, it is INTERSECTION of each individual segment's styles
   StyleM collectStyle(int offset, int len) {
+    // Returns the number of chars selected for each line individually with '\n' included when trying to go with selection on next line.
     final local = math.min(length - offset, len);
     var result = StyleM();
     final excluded = <AttributeM>{};

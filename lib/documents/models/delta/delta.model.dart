@@ -467,9 +467,9 @@ class DeltaM {
   // (source: https://github.com/google/diff-match-patch/wiki/API)
   // Useful when one wishes to display difference between 2 documents
   DeltaM diff(
-      DeltaM other, {
-        bool cleanupSemantic = true,
-      }) {
+    DeltaM other, {
+    bool cleanupSemantic = true,
+  }) {
     // Placeholder char for embed in diff()
     final kNullCharacter = String.fromCharCode(0);
 

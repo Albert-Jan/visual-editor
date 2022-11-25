@@ -1,4 +1,5 @@
 import '../../controller/state/paste.state.dart';
+import '../../controller/state/toggled.state.dart';
 import '../../cursor/state/cursor.state.dart';
 import '../../documents/state/document.state.dart';
 import '../../editor/state/editor-config.state.dart';
@@ -39,6 +40,7 @@ import 'references.state.dart';
 class EditorState {
   // Controller
   final paste = PasteState();
+  final toggled = ToggledState();
 
   // Cursor
   final cursor = CursorState();

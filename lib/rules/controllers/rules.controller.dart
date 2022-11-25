@@ -8,9 +8,9 @@ import 'delete/ensure-embed-line.rule.dart';
 import 'delete/ensure-last-line-break-delete.rule.dart';
 import 'delete/preserve-line-style-on-merge.rule.dart';
 import 'format/format-link-at-caret-position.rule.dart';
+import 'format/resolve-block-format.rule.dart';
 import 'format/resolve-image-format.rule.dart';
 import 'format/resolve-inline-format.rule.dart';
-import 'format/resolve-line-format.rule.dart';
 import 'insert/auto-exit-block.rule.dart';
 import 'insert/auto-format-links.rule.dart';
 import 'insert/auto-format-multiple-links.rule.dart';
@@ -31,7 +31,7 @@ class RulesController {
 
   static final RulesController _instance = RulesController([
     const FormatLinkAtCaretPositionRule(),
-    const ResolveLineFormatRule(),
+    const ResolveBlockFormatRule(),
     const ResolveInlineFormatRule(),
     const ResolveImageFormatRule(),
     const InsertEmbedsRule(),

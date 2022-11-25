@@ -115,11 +115,6 @@ class EditorController {
   void Function()? onBuildComplete;
   void Function()? onScroll;
 
-  // TODO Move to dedicated state
-  // Store any styles attribute that got toggled by the tap of a button and that has not been applied yet.
-  // It gets reset after each format action within the document.
-  StyleM toggledStyle = StyleM();
-
   // Stream the changes of every document.
   // Be aware that it emits way before any build() was completed.
   // Therefore you wont have access to the latest rectangles for highlights and markers.
@@ -264,17 +259,17 @@ class EditorController {
 
     if (len > 0 || data is! String || data.isNotEmpty) {
       delta = document.replace(index, len, data);
-      var shouldRetainDelta = toggledStyle.isNotEmpty &&
+      var shouldRetainDelta = _state.toggled.toggledStyle.isNotEmpty &&
           delta.isNotEmpty &&
           delta.length <= 2 &&
           delta.last.isInsert;
 
       if (shouldRetainDelta &&
-          toggledStyle.isNotEmpty &&
+          _state.toggled.toggledStyle.isNotEmpty &&
           delta.length == 2 &&
           delta.last.data == '\n') {
         // If all attributes are inline, shouldRetainDelta should be false
-        final anyAttributeNotInline = toggledStyle.values.any(
+        final anyAttributeNotInline = _state.toggled.toggledStyle.values.any(
           (attr) => !attr.isInline,
         );
 
@@ -288,7 +283,7 @@ class EditorController {
           ..retain(index)
           ..retain(
             data is String ? data.length : 1,
-            toggledStyle.toJson(),
+            _state.toggled.toggledStyle.toJson(),
           );
         document.compose(retainDelta, ChangeSource.local);
       }
@@ -299,10 +294,10 @@ class EditorController {
       final hasAttrs = style.attributes != null;
       final notInlineStyle = style.attributes!.values.where((s) => !s.isInline);
       if (hasAttrs) {
-        toggledStyle = style.removeAll(notInlineStyle.toSet());
+        _state.toggled.setToggledStyle(style.removeAll(notInlineStyle.toSet()));
       }
     } else {
-      toggledStyle = StyleM();
+      _state.toggled.setToggledStyle(StyleM());
     }
 
     if (textSelection != null) {
@@ -398,7 +393,8 @@ class EditorController {
         attribute.key != AttributesM.link.key) {
       // Add the attribute to our toggledStyle.
       // It will be used later upon insertion.
-      toggledStyle = toggledStyle.put(attribute);
+      _state.toggled
+          .setToggledStyle(_state.toggled.toggledStyle.put(attribute));
     }
 
     final formattedDocument = document.format(index, len, attribute);
@@ -424,27 +420,17 @@ class EditorController {
   }
 
   // Applies an attribute to a selection of text.
-  // (!) In code blocks we only want to permit indentation and reverting to normal text attributes.
   void formatSelection(AttributeM? attribute) {
-    // TODO Add for inline code same behaviour?
-    final isCodeBlock =
-        getSelectionStyle().attributes?.containsKey(AttributesM.codeBlock.key);
+    final isCodeBlockFormat = _isCodeBlockFormat();
+    final isInlineCodeFormat = _isInlineCodeFormat();
 
-    final isAttributePermittedInCodeBlock =
-        attribute?.key == 'indent' || attribute?.key == 'code-block';
+    if (isCodeBlockFormat) {
+      _formatCodeBlock(attribute);
+      return;
+    }
 
-    // Only indent and disable code block on selection when we are in a code block.
-    // Any other attribute will be ignored if applied to a code block.
-    // Code blocks should not have text style, different text sizes etc.
-    // It should work as an IDE.
-    if (isCodeBlock != null && isCodeBlock) {
-      isAttributePermittedInCodeBlock
-          ? formatText(
-              selection.start,
-              selection.end - selection.start,
-              attribute,
-            )
-          : null;
+    if (isInlineCodeFormat) {
+      _formatInlineCode(attribute);
       return;
     }
 
@@ -455,13 +441,13 @@ class EditorController {
     );
   }
 
-  // Only attributes applied to all characters within this range are included in the result.
+  // (!) Only attributes applied to all characters within this range are included in the result.
   StyleM getSelectionStyle() => document
       .collectStyle(
         selection.start,
         selection.end - selection.start,
       )
-      .mergeAll(toggledStyle);
+      .mergeAll(_state.toggled.toggledStyle);
 
   // Returns all styles for each node within selection
   List<PasteStyleM> getAllIndividualSelectionStyles() {
@@ -478,7 +464,7 @@ class EditorController {
     final styles = document.collectAllStyles(
       selection.start,
       selection.end - selection.start,
-    )..add(toggledStyle);
+    )..add(_state.toggled.toggledStyle);
 
     return styles;
   }
@@ -667,6 +653,58 @@ class EditorController {
 
   // === PRIVATE ===
 
+  // (!) In code block we only want to permit indentation and reverting
+  // to normal text (by pressing on CODE BLOCK button from toolbar) attributes.
+  void _formatCodeBlock(AttributeM? attribute) {
+    final isAvailableAttributeInCodeBlock =
+        attribute?.key == 'indent' || attribute?.key == 'code-block';
+
+    isAvailableAttributeInCodeBlock
+        ? formatText(
+            selection.start,
+            selection.end - selection.start,
+            attribute,
+          )
+        : null;
+  }
+
+  // (!) In inline code we only want to permit indentation and reverting
+  // to normal text (by pressing on INLINE-CODE button from toolbar) attributes.
+  void _formatInlineCode(AttributeM? attribute) {
+    final isAvailableAttributeInInlineCode =
+        attribute?.key == 'indent' || attribute?.key == 'code';
+
+    isAvailableAttributeInInlineCode
+        ? formatText(
+            selection.start,
+            selection.end - selection.start,
+            attribute,
+          )
+        : null;
+  }
+
+  bool _isCodeBlockFormat() {
+    final isCodeBlock =
+        getSelectionStyle().attributes?.containsKey(AttributesM.codeBlock.key);
+
+    if (isCodeBlock != null && isCodeBlock) {
+      return true;
+    }
+
+    return false;
+  }
+
+  bool _isInlineCodeFormat() {
+    final isInlineCode =
+        getSelectionStyle().attributes?.containsKey(AttributesM.inlineCode.key);
+
+    if (isInlineCode != null && isInlineCode) {
+      return true;
+    }
+
+    return false;
+  }
+
   void _handleHistoryChange(int? length) {
     if (length! != 0) {
       updateSelection(
@@ -689,7 +727,7 @@ class EditorController {
       baseOffset: math.min(selection.baseOffset, end),
       extentOffset: math.min(selection.extentOffset, end),
     );
-    toggledStyle = StyleM();
+    _state.toggled.setToggledStyle(StyleM());
   }
 
   // We have separated the selection callback from the selection caching code because we have to wait

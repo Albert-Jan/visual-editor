@@ -51,6 +51,8 @@ class EditorTextService {
     setTextEditingValue(value, state);
   }
 
+  // === PRIVATE ===
+
   void _applyPasteStyle(String insertedText, int start, EditorState state ) {
     if (insertedText == state.paste.pastePlainText &&
         state.paste.pastePlainText != '') {

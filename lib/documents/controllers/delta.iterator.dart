@@ -80,7 +80,11 @@ class DeltaIterator {
       final opActualLength = opIsNotEmpty ? opLength : actualLength;
 
       return OperationM(
-          operationKey, opActualLength, opData, operationAttributes);
+        operationKey,
+        opActualLength,
+        opData,
+        operationAttributes,
+      );
     }
     return OperationM.retain(length);
   }

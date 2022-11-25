@@ -6,6 +6,8 @@ import '../../../documents/models/delta/operation.model.dart';
 import '../../models/format-rule.model.dart';
 
 // Produces Delta with inline-level attributes applied to all characters except newlines.
+// Some examples of inline attributes would be bold, italic, underline.
+// By removing this method, every inline-level attribute will not work.
 class ResolveInlineFormatRule extends FormatRuleM {
   const ResolveInlineFormatRule();
 
@@ -17,6 +19,7 @@ class ResolveInlineFormatRule extends FormatRuleM {
     Object? data,
     AttributeM? attribute,
   }) {
+    // Don't change anything if the attribute scope is not INLINE.
     if (attribute!.scope != AttributeScope.INLINE) {
       return null;
     }
