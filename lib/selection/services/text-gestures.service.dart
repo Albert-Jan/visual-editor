@@ -361,7 +361,7 @@ class TextGesturesService {
     if (segmentLeaf == null && line.length == 1) {
       updateSelection(
         TextSelection.collapsed(offset: pos.offset),
-        ChangeSource.LOCAL,
+        ChangeSource.local,
         state,
       );
 

@@ -136,7 +136,7 @@ class MarkersDropdown extends StatelessWidget with EditorStateReceiver {
           .where(
             (marker) => marker.type == option.value,
           )
-          .toList();
+          .operationsToList();
 
       return matchedMarkers.length;
     } else {

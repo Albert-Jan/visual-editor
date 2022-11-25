@@ -6,10 +6,19 @@ import 'data-decoder.type.dart';
 const _attributeEquality = DeepCollectionEquality();
 const _valueEquality = DeepCollectionEquality();
 
+// TODO Improve doc comm.
 // Operation performed on a rich-text document.
 class OperationM {
-  // Default data decoder which simply passes through the original value.
-  static Object? _passThroughDataDecoder(Object? data) => data;
+  // Key of this operation.
+  // Can be "insert", "delete" or "retain".
+  final String key;
+
+  // Length of this operation.
+  final int? length;
+
+  // Payload of "insert" operation.
+  // For other types is set to empty string.
+  final Object? data;
 
   OperationM(
     this.key,
@@ -40,7 +49,8 @@ class OperationM {
   factory OperationM.retain(int? length, [Map<String, dynamic>? attributes]) =>
       OperationM(OperationM.retainKey, length, '', attributes);
 
-  // TODO Move to enum
+  // Can't be moved to enum, their type must remain string. Idk why exactly, but
+  // otherwise it will get runtime errors.
   static const String insertKey = 'insert';
 
   static const String deleteKey = 'delete';
@@ -53,22 +63,14 @@ class OperationM {
 
   static const List<String> _validKeys = [insertKey, deleteKey, retainKey];
 
-  // Key of this operation.
-  // Can be "insert", "delete" or "retain".
-  final String key;
-
-  // TODO Dow really woant optional value here? Should be guaranteed with fail safe to zero.
-  // Length of this operation.
-  final int? length;
-
-  // Payload of "insert" operation.
-  // For other types is set to empty string.
-  final Object? data;
+  final Map<String, dynamic>? _attributes;
 
   // Rich-text attributes set by this operation, can be `null`.
   Map<String, dynamic>? get attributes =>
       _attributes == null ? null : Map<String, dynamic>.from(_attributes!);
-  final Map<String, dynamic>? _attributes;
+
+  // Default data decoder which simply passes through the original value.
+  static Object? _passThroughDataDecoder(Object? data) => data;
 
   // Creates new [Operation] from JSON payload.
   // If `dataDecoder` parameter is not null then it is used to additionally decode the operation's data object. Only applied to insert operations.
@@ -128,23 +130,12 @@ class OperationM {
 
   bool get isNotEmpty => length! > 0;
 
-  @override
-  bool operator ==(other) {
-    if (identical(this, other)) return true;
-    if (other is! OperationM) return false;
-    final typedOther = other;
-    return key == typedOther.key &&
-        length == typedOther.length &&
-        _valueEquality.equals(data, typedOther.data) &&
-        hasSameAttributes(typedOther);
-  }
+  // Operation has the specified attribute.
+  bool hasAttribute(String attribute) =>
+      isNotPlain && _attributes!.containsKey(attribute);
 
-  // Operation has attribute specified by [name].
-  bool hasAttribute(String name) =>
-      isNotPlain && _attributes!.containsKey(name);
-
-  // other operation has the same attributes as this one.
-  bool hasSameAttributes(OperationM other) {
+  // Check if other operation has the same attributes as this one.
+  bool hasSameAttributesAs(OperationM other) {
     // Treat null and empty equal
     if ((_attributes?.isEmpty ?? true) &&
         (other._attributes?.isEmpty ?? true)) {
@@ -154,12 +145,14 @@ class OperationM {
     return _attributeEquality.equals(_attributes, other._attributes);
   }
 
+  // === OVERRIDES ===
+
   @override
   int get hashCode {
     if (_attributes != null && _attributes!.isNotEmpty) {
       final attrsHash = hashObjects(
         _attributes!.entries.map(
-          (e) => hash2(e.key, e.value),
+              (e) => hash2(e.key, e.value),
         ),
       );
 
@@ -174,10 +167,21 @@ class OperationM {
     final attr = attributes == null ? '' : ' + $attributes';
     final text = isInsert
         ? (data is String
-            ? (data as String).replaceAll('\n', '⏎')
-            : data.toString())
+        ? (data as String).replaceAll('\n', '⏎')
+        : data.toString())
         : '$length';
 
     return '$key⟨ $text ⟩$attr';
+  }
+
+  @override
+  bool operator ==(other) {
+    if (identical(this, other)) return true;
+    if (other is! OperationM) return false;
+    final typedOther = other;
+    return key == typedOther.key &&
+        length == typedOther.length &&
+        _valueEquality.equals(data, typedOther.data) &&
+        hasSameAttributesAs(typedOther);
   }
 }

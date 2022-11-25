@@ -16,10 +16,10 @@ class CatchAllDeleteRule extends DeleteRuleM {
     Object? data,
     AttributeM? attribute,
   }) {
-    final itr = DeltaIterator(document)..skip(index + len!);
+    final iterator = DeltaIterator(document)..skip(index + len!);
 
     return DeltaM()
       ..retain(index)
-      ..delete(itr.hasNext ? len : len - 1);
+      ..delete(iterator.isNotLastOperation ? len : len - 1);
   }
 }

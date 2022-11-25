@@ -18,6 +18,6 @@ class EnsureLastLineBreakDeleteRule extends DeleteRuleM {
 
     return DeltaM()
       ..retain(index)
-      ..delete(itr.hasNext ? len : len - 1);
+      ..delete(itr.isNotLastOperation ? len : len - 1);
   }
 }

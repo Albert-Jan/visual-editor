@@ -16,17 +16,6 @@ import '../../models/rules.utils.dart';
 class AutoExitBlockRule extends InsertRuleM {
   const AutoExitBlockRule();
 
-  bool _isEmptyLine(OperationM? before, OperationM? after) {
-    if (before == null) {
-      return true;
-    }
-
-    return before.data is String &&
-        (before.data as String).endsWith('\n') &&
-        after!.data is String &&
-        (after.data as String).startsWith('\n');
-  }
-
   @override
   DeltaM? applyRule(
     DeltaM document,
@@ -39,8 +28,9 @@ class AutoExitBlockRule extends InsertRuleM {
       return null;
     }
 
-    final itr = DeltaIterator(document);
-    final prev = itr.skip(index), cur = itr.next();
+    final deltaIterator = DeltaIterator(document);
+    final prev = deltaIterator.skip(index);
+    final cur = deltaIterator.next();
     final blockStyle = StyleM.fromJson(cur.attributes).getBlockExceptHeader();
 
     // We are not in a block, ignore.
@@ -64,7 +54,7 @@ class AutoExitBlockRule extends InsertRuleM {
     }
 
     // Keep looking for the next newline character to see if it shares the same block style as `cur`.
-    final nextNewLine = getNextNewLine(itr);
+    final nextNewLine = getNextNewLine(deltaIterator);
     if (nextNewLine.operation != null &&
         nextNewLine.operation!.attributes != null &&
         StyleM.fromJson(nextNewLine.operation!.attributes)
@@ -86,5 +76,18 @@ class AutoExitBlockRule extends InsertRuleM {
     return DeltaM()
       ..retain(index + (len ?? 0))
       ..retain(1, attributes);
+  }
+
+  // === PRIVATE ===
+
+  bool _isEmptyLine(OperationM? before, OperationM? after) {
+    if (before == null) {
+      return true;
+    }
+
+    return before.data is String &&
+        (before.data as String).endsWith('\n') &&
+        after!.data is String &&
+        (after.data as String).startsWith('\n');
   }
 }

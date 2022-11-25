@@ -55,7 +55,9 @@ class RulesController {
     _customRules = customRules;
   }
 
-  DeltaM apply(
+  // Loop through each rule in _customRules and _rules and if it has the same
+  // type as the given rule type apply the rule.
+  DeltaM applyRulesByType(
     RuleTypeE ruleType,
     DocumentM document,
     int index, {
@@ -66,13 +68,13 @@ class RulesController {
     final delta = document.toDelta();
 
     for (final rule in _customRules + _rules) {
-
+      // Continue if types are not the same.
       if (rule.type != ruleType) {
         continue;
       }
 
       try {
-        final result = rule.apply(
+        final appliedRule = rule.applyRule(
           delta,
           index,
           len: len,
@@ -80,15 +82,14 @@ class RulesController {
           attribute: attribute,
         );
 
-        if (result != null) {
-          return result..trim();
+        if (appliedRule != null) {
+          return appliedRule..trim();
         }
-
       } catch (e) {
         rethrow;
       }
     }
 
-    throw 'Apply rules failed';
+    throw 'Applying rules failed';
   }
 }

@@ -25,7 +25,7 @@ class EditorTextService {
       // Only changing selection range
       state.refs.editorController.updateSelection(
         value.selection,
-        ChangeSource.LOCAL,
+        ChangeSource.local,
       );
       return;
     }

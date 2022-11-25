@@ -221,7 +221,7 @@ class TextSelectionService {
 
     state.refs.editorController.updateSelection(
       selection,
-      ChangeSource.LOCAL,
+      ChangeSource.local,
     );
 
     // Mobiles only

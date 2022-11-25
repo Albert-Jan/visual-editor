@@ -223,7 +223,7 @@ class EditorController {
     compose(
       delta,
       const TextSelection.collapsed(offset: 0),
-      ChangeSource.LOCAL,
+      ChangeSource.local,
     );
   }
 
@@ -290,7 +290,7 @@ class EditorController {
             data is String ? data.length : 1,
             toggledStyle.toJson(),
           );
-        document.compose(retainDelta, ChangeSource.LOCAL);
+        document.compose(retainDelta, ChangeSource.local);
       }
     }
 
@@ -307,7 +307,7 @@ class EditorController {
 
     if (textSelection != null) {
       if (delta == null || delta.isEmpty) {
-        _cacheSelection(textSelection, ChangeSource.LOCAL);
+        _cacheSelection(textSelection, ChangeSource.local);
       } else {
         final user = DeltaM()
           ..retain(index)
@@ -320,7 +320,7 @@ class EditorController {
             baseOffset: textSelection.baseOffset + positionDelta,
             extentOffset: textSelection.extentOffset + positionDelta,
           ),
-          ChangeSource.LOCAL,
+          ChangeSource.local,
         );
       }
     }
@@ -401,19 +401,19 @@ class EditorController {
       toggledStyle = toggledStyle.put(attribute);
     }
 
-    final change = document.format(index, len, attribute);
+    final formattedDocument = document.format(index, len, attribute);
 
     // Transform selection against the composed change and give priority to the change.
     // This is needed in cases when format operation actually inserts data into the document (e.g. embeds).
     final adjustedSelection = selection.copyWith(
-      baseOffset: change.transformPosition(selection.baseOffset),
-      extentOffset: change.transformPosition(selection.extentOffset),
+      baseOffset: formattedDocument.transformPosition(selection.baseOffset),
+      extentOffset: formattedDocument.transformPosition(selection.extentOffset),
     );
 
     final sameSelection = selection == adjustedSelection;
 
     if (!sameSelection) {
-      _cacheSelection(adjustedSelection, ChangeSource.LOCAL);
+      _cacheSelection(adjustedSelection, ChangeSource.local);
     }
 
     _state.refreshEditor.refreshEditor();
@@ -423,8 +423,31 @@ class EditorController {
     }
   }
 
-  // Applies an attribute to a selection of text
+  // Applies an attribute to a selection of text.
+  // (!) In code blocks we only want to permit indentation and reverting to normal text attributes.
   void formatSelection(AttributeM? attribute) {
+    // TODO Add for inline code same behaviour?
+    final isCodeBlock =
+        getSelectionStyle().attributes?.containsKey(AttributesM.codeBlock.key);
+
+    final isAttributePermittedInCodeBlock =
+        attribute?.key == 'indent' || attribute?.key == 'code-block';
+
+    // Only indent and disable code block on selection when we are in a code block.
+    // Any other attribute will be ignored if applied to a code block.
+    // Code blocks should not have text style, different text sizes etc.
+    // It should work as an IDE.
+    if (isCodeBlock != null && isCodeBlock) {
+      isAttributePermittedInCodeBlock
+          ? formatText(
+              selection.start,
+              selection.end - selection.start,
+              attribute,
+            )
+          : null;
+      return;
+    }
+
     formatText(
       selection.start,
       selection.end - selection.start,
@@ -467,7 +490,7 @@ class EditorController {
       const TextSelection.collapsed(
         offset: 0,
       ),
-      ChangeSource.LOCAL,
+      ChangeSource.local,
     );
   }
 
@@ -476,7 +499,7 @@ class EditorController {
       TextSelection.collapsed(
         offset: position,
       ),
-      ChangeSource.LOCAL,
+      ChangeSource.local,
     );
   }
 
@@ -485,7 +508,7 @@ class EditorController {
       TextSelection.collapsed(
         offset: plainTextEditingValue.text.length,
       ),
-      ChangeSource.LOCAL,
+      ChangeSource.local,
     );
   }
 
@@ -650,7 +673,7 @@ class EditorController {
         TextSelection.collapsed(
           offset: selection.baseOffset + length,
         ),
-        ChangeSource.LOCAL,
+        ChangeSource.local,
       );
     } else {
       // No need to move cursor

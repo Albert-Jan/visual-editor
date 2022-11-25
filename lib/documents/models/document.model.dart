@@ -25,7 +25,14 @@ import 'nodes/root.model.dart';
 import 'nodes/segment-leaf-node.model.dart';
 import 'style.model.dart';
 
-// The rich text document
+// TODO Explain the difference between delta and document and relationship between them.
+// DocumentM is responsible for applying operations on the document. These operations are:
+// 1. Insert
+// 2. Delete
+// 3. Replace
+// 4. Format
+// 5. Compose
+// etc.
 // TODO Better doc comment
 class DocumentM {
   // Creates new empty document.
@@ -58,14 +65,17 @@ class DocumentM {
   // Returns contents of this document as [DeltaM].
   DeltaM toDelta() => DeltaM.from(_delta);
 
+  // === RULES ===
+
   // Each document instance has it's own set of rules
   final RulesController _rules = RulesController.getInstance();
 
+  // Each editor has the possibility to add it's own set of rules.
   void setCustomRules(List<RuleM> customRules) {
     _rules.setCustomRules(customRules);
   }
 
-  final StreamController<DeltaChangeM> _changes = StreamController.broadcast();
+  // === HISTORY ===
 
   // TODO Better doc
   final HistoryM _history = HistoryM();
@@ -73,6 +83,8 @@ class DocumentM {
   bool get hasUndo => _history.hasUndo;
 
   bool get hasRedo => _history.hasRedo;
+
+  final StreamController<DeltaChangeM> _changes = StreamController.broadcast();
 
   // Stream of Changes applied to this document.
   Stream<DeltaChangeM> get changes => _changes.stream;
@@ -92,15 +104,15 @@ class DocumentM {
       return DeltaM();
     }
 
-    final delta = _rules.apply(
-      RuleTypeE.INSERT,
+    final delta = _rules.applyRulesByType(
+      RuleTypeE.insert,
       this,
       index,
       data: data,
       len: replaceLength,
     );
 
-    compose(delta, ChangeSource.LOCAL);
+    compose(delta, ChangeSource.local);
 
     return delta;
   }
@@ -112,15 +124,15 @@ class DocumentM {
   DeltaM delete(int index, int len) {
     assert(index >= 0 && len > 0);
 
-    final delta = _rules.apply(
-      RuleTypeE.DELETE,
+    final delta = _rules.applyRulesByType(
+      RuleTypeE.delete,
       this,
       index,
       len: len,
     );
 
     if (delta.isNotEmpty) {
-      compose(delta, ChangeSource.LOCAL);
+      compose(delta, ChangeSource.local);
     }
 
     return delta;
@@ -166,8 +178,8 @@ class DocumentM {
 
     var delta = DeltaM();
 
-    final formatDelta = _rules.apply(
-      RuleTypeE.FORMAT,
+    final formatDelta = _rules.applyRulesByType(
+      RuleTypeE.format,
       this,
       index,
       len: len,
@@ -175,15 +187,14 @@ class DocumentM {
     );
 
     if (formatDelta.isNotEmpty) {
-      compose(formatDelta, ChangeSource.LOCAL);
+      compose(formatDelta, ChangeSource.local);
       delta = delta.compose(formatDelta);
     }
 
     return delta;
   }
 
-  // TODO Improve doc to better express that compose is after rules
-  // Composes change Delta into this document.
+  // Composes change Delta into this document after applying rules, replacing/modifying text.
   // Use this method with caution as it does not apply heuristic rules to the change.
   // It is callers responsibility to ensure that the change conforms to the document
   // models semantics and can be composed with the current state of this document.
@@ -197,7 +208,7 @@ class DocumentM {
     delta = _transform(delta);
     final originalDelta = toDelta();
 
-    for (final operation in delta.toList()) {
+    for (final operation in delta.operations) {
       final style = operation.attributes != null
           ? StyleM.fromJson(operation.attributes)
           : null;
@@ -352,7 +363,7 @@ class DocumentM {
     var offset = 0;
 
     // Add to root
-    for (final operation in delta.toList()) {
+    for (final operation in delta.operations) {
       // Only insert operations
       if (!operation.isInsert) {
         throw ArgumentError.value(
@@ -422,7 +433,7 @@ class DocumentM {
 
   static DeltaM _transform(DeltaM delta) {
     final res = DeltaM();
-    final ops = delta.toList();
+    final ops = delta.operations;
 
     for (var i = 0; i < ops.length; i++) {
       final op = ops[i];
@@ -435,32 +446,32 @@ class DocumentM {
 
   static void _autoAppendNewlineAfterEmbeddable(
     int i,
-    List<OperationM> ops,
-    OperationM op,
+    List<OperationM> operations,
+    OperationM operation,
     DeltaM res,
     String type,
   ) {
-    final nextOpIsEmbed = i + 1 < ops.length &&
-        ops[i + 1].isInsert &&
-        ops[i + 1].data is Map &&
-        (ops[i + 1].data as Map).containsKey(type);
+    final nextOpIsEmbed = i + 1 < operations.length &&
+        operations[i + 1].isInsert &&
+        operations[i + 1].data is Map &&
+        (operations[i + 1].data as Map).containsKey(type);
 
     if (nextOpIsEmbed &&
-        op.data is String &&
-        (op.data as String).isNotEmpty &&
-        !(op.data as String).endsWith('\n')) {
+        operation.data is String &&
+        (operation.data as String).isNotEmpty &&
+        !(operation.data as String).endsWith('\n')) {
       res.push(OperationM.insert('\n'));
     }
 
     // Embed could be image or video
     final opInsertEmbed =
-        op.isInsert && op.data is Map && (op.data as Map).containsKey(type);
-    final nextOpIsLineBreak = i + 1 < ops.length &&
-        ops[i + 1].isInsert &&
-        ops[i + 1].data is String &&
-        (ops[i + 1].data as String).startsWith('\n');
+        operation.isInsert && operation.data is Map && (operation.data as Map).containsKey(type);
+    final nextOpIsLineBreak = i + 1 < operations.length &&
+        operations[i + 1].isInsert &&
+        operations[i + 1].data is String &&
+        (operations[i + 1].data as String).startsWith('\n');
 
-    if (opInsertEmbed && (i + 1 == ops.length - 1 || !nextOpIsLineBreak)) {
+    if (opInsertEmbed && (i + 1 == operations.length - 1 || !nextOpIsLineBreak)) {
       // Automatically append '\n' for embeddable
       res.push(OperationM.insert('\n'));
     }

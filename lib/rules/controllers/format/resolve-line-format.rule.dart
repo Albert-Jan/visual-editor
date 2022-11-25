@@ -27,7 +27,7 @@ class ResolveLineFormatRule extends FormatRuleM {
     final itr = DeltaIterator(document)..skip(index);
     OperationM op;
 
-    for (var cur = 0; cur < len! && itr.hasNext; cur += op.length!) {
+    for (var cur = 0; cur < len! && itr.isNotLastOperation; cur += op.length!) {
       op = itr.next(len - cur);
       final opText = op.data is String ? op.data as String : '';
 
@@ -41,7 +41,7 @@ class ResolveLineFormatRule extends FormatRuleM {
     }
 
     // And include extra newline after retain
-    while (itr.hasNext) {
+    while (itr.isNotLastOperation) {
       op = itr.next();
       final opText = op.data is String ? op.data as String : '';
       final lf = opText.indexOf('\n');
@@ -88,6 +88,8 @@ class ResolveLineFormatRule extends FormatRuleM {
 
     return result;
   }
+
+  // === PRIVATE ===
 
   Iterable<MapEntry<String, dynamic>> _getRemovedBlocks(
     AttributeM<dynamic> attribute,

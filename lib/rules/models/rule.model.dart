@@ -3,7 +3,7 @@ import '../../documents/models/delta/delta.model.dart';
 import 'rule-type.enum.dart';
 
 // Visual Editor (as in Quill) has a list of rules that are executed after each document change
-// Rules are contain logic to be executed once a certain trigger/condition is fulfilled.
+// Rules contains logic to be executed once a certain trigger/condition is fulfilled.
 // For ex: One rule is to break out of blocks when 2 new white lines are inserted.
 //   Such a rule will attempt to go trough the entire document and scan for lines of text
 //   that match the condition: 2 white lines one after the other.
@@ -19,31 +19,7 @@ import 'rule-type.enum.dart';
 abstract class RuleM {
   const RuleM();
 
-  DeltaM? apply(
-    DeltaM document,
-    int index, {
-    int? len,
-    Object? data,
-    AttributeM? attribute,
-  }) {
-    validateArgs(len, data, attribute);
-
-    return applyRule(
-      document,
-      index,
-      len: len,
-      data: data,
-      attribute: attribute,
-    );
-  }
-
-  void validateArgs(
-    int? len,
-    Object? data,
-    AttributeM? attribute,
-  );
-
-  // Applies heuristic rule to an operation on a [document] and returns resulting [DeltaM].
+  // Applies heuristic rule logic to an operation on a document and returns resulting DeltaM.
   DeltaM? applyRule(
     DeltaM document,
     int index, {

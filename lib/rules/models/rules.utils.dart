@@ -5,7 +5,7 @@ import 'new-operartion.model.dart';
 NewOperationM getNextNewLine(DeltaIterator iterator) {
   OperationM operation;
 
-  for (var skipped = 0; iterator.hasNext; skipped += operation.length!) {
+  for (var skipped = 0; iterator.isNotLastOperation; skipped += operation.length!) {
     operation = iterator.next();
     final lineBreak =
         (operation.data is String ? operation.data as String? : '')!

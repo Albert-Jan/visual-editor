@@ -1,5 +1,5 @@
 enum RuleTypeE {
-  INSERT,
-  DELETE,
-  FORMAT,
+  insert,
+  delete,
+  format,
 }

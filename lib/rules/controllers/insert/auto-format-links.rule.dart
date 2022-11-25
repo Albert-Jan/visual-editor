@@ -21,8 +21,8 @@ class AutoFormatLinksRule extends InsertRuleM {
       return null;
     }
 
-    final itr = DeltaIterator(document);
-    final prev = itr.skip(index);
+    final deltaIterator = DeltaIterator(document);
+    final prev = deltaIterator.skip(index);
 
     if (prev == null || prev.data is! String) {
       return null;
@@ -38,10 +38,12 @@ class AutoFormatLinksRule extends InsertRuleM {
 
       final attributes = prev.attributes ?? <String, dynamic>{};
 
+      // Already a link, do nothing.
       if (attributes.containsKey(AttributesM.link.key)) {
         return null;
       }
 
+      // Transform it into a link.
       attributes.addAll(LinkAttributeM(link.toString()).toJson());
 
       return DeltaM()

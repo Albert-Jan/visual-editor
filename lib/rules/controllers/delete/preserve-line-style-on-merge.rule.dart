@@ -29,7 +29,7 @@ class PreserveLineStyleOnMergeRule extends DeleteRuleM {
 
     itr.skip(len! - 1);
 
-    if (!itr.hasNext) {
+    if (!itr.isNotLastOperation) {
       // User attempts to delete the last newline character, prevent it.
       return DeltaM()
         ..retain(index)
@@ -40,7 +40,7 @@ class PreserveLineStyleOnMergeRule extends DeleteRuleM {
       ..retain(index)
       ..delete(len);
 
-    while (itr.hasNext) {
+    while (itr.isNotLastOperation) {
       op = itr.next();
       final text = op.data is String ? (op.data as String?)! : '';
       final lineBreak = text.indexOf('\n');

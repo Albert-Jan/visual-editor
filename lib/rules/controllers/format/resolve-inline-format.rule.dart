@@ -25,7 +25,7 @@ class ResolveInlineFormatRule extends FormatRuleM {
     final itr = DeltaIterator(document)..skip(index);
     OperationM op;
 
-    for (var cur = 0; cur < len! && itr.hasNext; cur += op.length!) {
+    for (var cur = 0; cur < len! && itr.isNotLastOperation; cur += op.length!) {
       op = itr.next(len - cur);
       final text = op.data is String ? (op.data as String?)! : '';
       var lineBreak = text.indexOf('\n');

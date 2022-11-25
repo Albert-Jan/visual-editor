@@ -6,6 +6,7 @@ import 'document.model.dart';
 import 'history-stack.model.dart';
 import 'nodes/revert-operations.model.dart';
 
+// TODO Add explanatory comment.
 class HistoryM {
   HistoryM({
     this.ignoreChange = false,
@@ -37,7 +38,7 @@ class HistoryM {
 
   void handleDocChange(DeltaChangeM change) {
     if (ignoreChange) return;
-    if (!userOnly || change.source == ChangeSource.LOCAL) {
+    if (!userOnly || change.source == ChangeSource.local) {
       record(change.changes, change.initialState);
     } else {
       transform(change.initialState);
@@ -101,7 +102,7 @@ class HistoryM {
     final delta = source.removeLast();
     // look for insert or delete
     int? len = 0;
-    final operations = delta.toList();
+    final operations = delta.operations;
 
     for (var i = 0; i < operations.length; i++) {
       if (operations[i].key == OperationM.insertKey) {
@@ -115,7 +116,7 @@ class HistoryM {
     dest.add(inverseDelta);
     lastRecorded = 0;
     ignoreChange = true;
-    doc.compose(delta, ChangeSource.LOCAL);
+    doc.compose(delta, ChangeSource.local);
     ignoreChange = false;
 
     return RevertOperationM(true, len);

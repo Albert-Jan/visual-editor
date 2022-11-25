@@ -158,7 +158,7 @@ class InputConnectionService {
     if (diff.deleted.isEmpty && diff.inserted.isEmpty) {
       controller.updateSelection(
         value.selection,
-        ChangeSource.LOCAL,
+        ChangeSource.local,
       );
     } else {
       controller.replaceText(

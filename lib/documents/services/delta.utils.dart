@@ -45,7 +45,7 @@ int getPositionDelta(
   final actualItr = DeltaIterator(actual);
   var diff = 0;
 
-  while (userItr.hasNext || actualItr.hasNext) {
+  while (userItr.isNotLastOperation || actualItr.isNotLastOperation) {
     final length = math.min(userItr.peekLength(), actualItr.peekLength());
     final userOperation = userItr.next(length);
     final actualOperation = actualItr.next(length);

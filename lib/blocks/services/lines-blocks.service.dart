@@ -272,7 +272,7 @@ class LinesBlocksService {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         state.refs.editorController.updateSelection(
           TextSelection.collapsed(offset: offset),
-          ChangeSource.LOCAL,
+          ChangeSource.local,
         );
       });
     }

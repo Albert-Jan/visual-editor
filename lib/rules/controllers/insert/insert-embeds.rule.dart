@@ -44,7 +44,7 @@ class InsertEmbedsRule extends InsertRuleM {
     if (textAfter.contains('\n')) {
       lineStyle = cur.attributes;
     } else {
-      while (itr.hasNext) {
+      while (itr.isNotLastOperation) {
         final op = itr.next();
         if ((op.data is String ? op.data as String? : '')!.contains('\n')) {
           lineStyle = op.attributes;
