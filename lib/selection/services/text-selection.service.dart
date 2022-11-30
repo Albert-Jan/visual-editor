@@ -111,6 +111,7 @@ class TextSelectionService {
     final fromPosition = _linesBlocksService.getPositionForOffset(from, state);
     final toPosition =
         to == null ? null : _linesBlocksService.getPositionForOffset(to, state);
+
     var baseOffset = fromPosition.offset;
     var extentOffset = fromPosition.offset;
 

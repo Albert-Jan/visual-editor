@@ -21,17 +21,21 @@ class CursorPainter {
     required this.devicePixelRatio,
   });
 
-  // Paints cursor on [canvas] at specified [position].
-  // [offset] is global top left (x, y) of text line
-  // [position] is relative (x) in text line
+  // Paints cursor on canvas at specified position.
+  // offset is global top left (x, y) of text line
+  // position is relative (x) in text line
   void paint(
     Canvas canvas,
     Offset offset,
     TextPosition position,
     bool lineHasEmbed,
   ) {
-    // relative (x, y) to global offset
+    // For each line, it gets the offset of the caret on that line.
+    // Placing the caret on another line it will give a different offset.
+    // Relative (x, y) to global offset.
     var relativeCaretOffset = editable!.getOffsetForCaret(position, prototype);
+
+    // === EMBEDS ===
 
     if (lineHasEmbed && relativeCaretOffset == Offset.zero) {
       relativeCaretOffset = editable!.getOffsetForCaret(
@@ -49,6 +53,7 @@ class CursorPainter {
     }
 
     final caretOffset = relativeCaretOffset + offset;
+
     var caretRect = prototype.shift(caretOffset);
 
     if (style.offset != null) {
@@ -104,13 +109,17 @@ class CursorPainter {
     }
   }
 
+  // === PRIVATE ===
+
   Offset _getPixelPerfectCursorOffset(Rect caretRect) {
     final caretPosition = editable!.localToGlobal(caretRect.topLeft);
     final pixelMultiple = 1.0 / devicePixelRatio;
+
     final pixelPerfectOffsetX = caretPosition.dx.isFinite
         ? (caretPosition.dx / pixelMultiple).round() * pixelMultiple -
             caretPosition.dx
         : caretPosition.dx;
+
     final pixelPerfectOffsetY = caretPosition.dy.isFinite
         ? (caretPosition.dy / pixelMultiple).round() * pixelMultiple -
             caretPosition.dy

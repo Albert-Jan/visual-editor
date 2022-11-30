@@ -11,6 +11,7 @@ import '../../selection/services/text-selection.service.dart';
 import '../../shared/state/editor.state.dart';
 import '../services/cursor.service.dart';
 
+// This cursor is only for tappable devices like mobiles.
 // When long pressing the cursor can be moved by dragging your finger on the screen.
 // The floating cursor helps users see where the cursor is going to be placed
 // while their finger is obscuring the view.

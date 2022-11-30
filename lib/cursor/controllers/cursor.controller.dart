@@ -34,6 +34,7 @@ class CursorController {
       _floatingCursorTextPosition.value = position;
 
   bool get isFloatingCursorActive => floatingCursorTextPosition.value != null;
+
   CursorStyle _style;
 
   CursorStyle get style => _style;

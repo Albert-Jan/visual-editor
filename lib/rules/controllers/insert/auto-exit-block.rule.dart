@@ -16,17 +16,6 @@ import '../../models/rules.utils.dart';
 class AutoExitBlockRule extends InsertRuleM {
   const AutoExitBlockRule();
 
-  bool _isEmptyLine(OperationM? before, OperationM? after) {
-    if (before == null) {
-      return true;
-    }
-
-    return before.data is String &&
-        (before.data as String).endsWith('\n') &&
-        after!.data is String &&
-        (after.data as String).startsWith('\n');
-  }
-
   @override
   DeltaM? applyRule(
     DeltaM document,
@@ -86,5 +75,18 @@ class AutoExitBlockRule extends InsertRuleM {
     return DeltaM()
       ..retain(index + (len ?? 0))
       ..retain(1, attributes);
+  }
+
+  // === PRIVATE ===
+
+  bool _isEmptyLine(OperationM? before, OperationM? after) {
+    if (before == null) {
+      return true;
+    }
+
+    return before.data is String &&
+        (before.data as String).endsWith('\n') &&
+        after!.data is String &&
+        (after.data as String).startsWith('\n');
   }
 }

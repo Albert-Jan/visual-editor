@@ -129,7 +129,6 @@ class TextGesturesService {
     TargetPlatform platform,
     EditorState state,
   ) {
-
     _selectionActionsService.hideToolbar(state);
 
     try {

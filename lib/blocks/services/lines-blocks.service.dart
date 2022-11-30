@@ -30,7 +30,9 @@ class LinesBlocksService {
   // An editable text line is composed of a underlying text line (text spans)
   // and the editable text line wrapper (which renders text selection, markers and highlights).
   EditableTextLineWidgetRenderer getEditableTextLineFromNode(
-      LineM node, EditorState state) {
+    LineM node,
+    EditorState state,
+  ) {
     final editor = state.refs.editorState;
 
     // Text spans with text styling from flutter
@@ -181,14 +183,39 @@ class LinesBlocksService {
   // In this case, however, the two points might actually be co-located (e.g., because of a bidirectional
   // selection that contains some text but whose ends meet in the middle).
   TextPosition getPositionForOffset(Offset offset, EditorState state) {
+    // Converts the global (whole screen) coordinates to only the widget zone coordinates.
     final local = state.refs.renderer.globalToLocal(offset);
+
+    // The child inside the local widget.
     final child = childAtOffset(local, state);
     final parentData = child.parentData as BoxParentData;
     final localOffset = local - parentData.offset;
     final localPosition = child.getPositionForOffset(localOffset);
 
+    // Store the letter position. Works properly if the line is not empty (doesn't contain '\n').
+    // For that we got below a condition which solves the problem.
+    final letterOffset = localPosition.offset + child.container.offset;
+
+    final isNotFirstCharInsideDocument = letterOffset > 1;
+
+    // (!) In order to make the caret be placeable before the first letter in the document.
+    if (isNotFirstCharInsideDocument) {
+      // Selection is also when user taps at a specific place in the editor in order to place the caret.
+      final firstLetterOfSelection =
+          state.document.document.getPlainText(letterOffset - 1, 1);
+
+      // Empty Line
+      if (firstLetterOfSelection == '\n') {
+        // Move caret at the position of that empty line.
+        return TextPosition(
+          offset: child.container.offset,
+          affinity: localPosition.affinity,
+        );
+      }
+    }
+
     return TextPosition(
-      offset: localPosition.offset + child.container.offset,
+      offset: letterOffset,
       affinity: localPosition.affinity,
     );
   }
