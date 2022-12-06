@@ -11,7 +11,7 @@ import '../services/styles.utils.dart';
 import 'editable-text-line-box-renderer.dart';
 import 'editable-text-line-leading-and-body.dart';
 
-// Receives as a child a regular life of text made of text spans.
+// Receives as a child a regular line of text made of text spans.
 // Over the basic rich text made from spans it adds additional layouting or styling
 // For example:
 // - checkboxes for todos
@@ -154,6 +154,11 @@ class EditableTextLineWidgetRenderer extends RenderObjectWidget {
   // Avoids exposing the private renderer, it only collects the selection.
   SelectionRectanglesM? getSelectionCoordinates() {
     return _renderer?.getSelectionCoordinates();
+  }
+
+  // Avoids exposing the private renderer, it only collects the selected link.
+  SelectionRectanglesM? getSelectedLinkRectangles() {
+    return _renderer?.getSelectedLinkRectangles();
   }
 
   // Avoids exposing the private renderer, it only collects the headings.

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+import '../../blocks/widgets/editable-text-line-widget-renderer.dart';
 import '../../documents/models/attribute-scope.enum.dart';
 import '../../documents/models/attribute.model.dart';
 import '../../documents/models/attributes/attributes.model.dart';
@@ -105,6 +106,9 @@ class EditorController {
   DeleteCallback? onDelete;
   SelectionChangedCallback? onSelectionChanged;
   SelectionCompleteCallback? onSelectionCompleted;
+
+  // TODO There's no need for a callback bcs i'm not going to implement the logic for displaying it from inside the page.
+  // TODO It is editor job to handle how it displays links, not from outside.
 
   // Called each time when the editor is updated via the refreshEditor$ stream.
   // This signal can be used to update the placement of attachments using the latest rectangles data (after any text editing operation).
@@ -386,7 +390,6 @@ class EditorController {
     }
   }
 
-  // TODO Add comment
   // Based on the executed change, we reset the text selection range (Ex: deleting text will decrease the text selection).
   void formatText(
     int index,

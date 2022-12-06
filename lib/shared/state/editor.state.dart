@@ -1,3 +1,5 @@
+import '../../blocks/state/link-menu-visibility.state.dart';
+import '../../blocks/state/selected-link.state.dart';
 import '../../controller/state/paste.state.dart';
 import '../../cursor/state/cursor.state.dart';
 import '../../documents/state/document.state.dart';
@@ -77,6 +79,10 @@ class EditorState {
   late final SelectionState selection;
   late final LastTapDownState lastTapDown;
   late final SelectionLayersState selectionLayers;
+  late final SelectedLinkState selectedLink;
+
+  // Links
+  late final LinkMenuVisibilityState linkMenuVisibility;
 
   // Caches references to different classes (widgets, renderers)
   // The library needs to support multiple instances.
@@ -92,25 +98,27 @@ class EditorState {
   late final ReferencesState refs;
 
   EditorState({
-     paste,
-     cursor,
-     document,
-     editorConfig,
-     refreshEditor,
-     styles,
-     platformStyles,
-     scrollAnimation,
-     highlights,
-     keyboardVisible,
-     pressedKeys,
-     markersTypes,
-     markers,
-     markersVisibility,
-     headings,
-     selection,
-     lastTapDown,
-     selectionLayers,
-     refs,
+    paste,
+    cursor,
+    document,
+    editorConfig,
+    refreshEditor,
+    styles,
+    platformStyles,
+    scrollAnimation,
+    highlights,
+    keyboardVisible,
+    pressedKeys,
+    markersTypes,
+    markers,
+    markersVisibility,
+    headings,
+    selection,
+    selectedLink,
+    linkMenuVisibility,
+    lastTapDown,
+    selectionLayers,
+    refs,
   }) {
     this.paste = paste ?? PasteState();
     this.cursor = cursor ?? CursorState();
@@ -128,6 +136,8 @@ class EditorState {
     this.markersVisibility = markersVisibility ?? MarkersVisibilityState();
     this.headings = headings ?? HeadingsState();
     this.selection = selection ?? SelectionState();
+    this.selectedLink = selectedLink ?? SelectedLinkState();
+    this.linkMenuVisibility = linkMenuVisibility ?? LinkMenuVisibilityState();
     this.lastTapDown = lastTapDown ?? LastTapDownState();
     this.selectionLayers = selectionLayers ?? SelectionLayersState();
     this.refs = refs ?? ReferencesState();
@@ -175,6 +185,7 @@ class EditorState {
         markersVisibility: markersVisibility,
         headings: headings,
         selection: selection,
+        selectedLink: selectedLink,
         lastTapDown: lastTapDown,
         selectionLayers: selectionLayers,
         refs: ReferencesState(),

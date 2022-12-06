@@ -69,19 +69,8 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isToggled = _getLinkAttributeValue() != null;
-    final pressedHandler = () => _openLinkDialog(context);
 
     return GestureDetector(
-      onTap: () async {
-        final dynamic tooltip = _toolTipKey.currentState;
-        tooltip.ensureTooltipVisible();
-        Future.delayed(
-          const Duration(
-            seconds: 3,
-          ),
-          tooltip.deactivate,
-        );
-      },
       child: Tooltip(
         key: _toolTipKey,
         message: 'Please first select some text to transform into a link.'.i18n,
@@ -105,9 +94,19 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
               : (widget.iconTheme?.iconUnselectedFillColor ??
                   theme.canvasColor),
           borderRadius: widget.iconTheme?.borderRadius ?? 2,
-          onPressed: pressedHandler,
+          onPressed: () => _openLinkDialog(context),
         ),
       ),
+      onTap: () async {
+        final dynamic tooltip = _toolTipKey.currentState;
+        tooltip.ensureTooltipVisible();
+        Future.delayed(
+          const Duration(
+            seconds: 3,
+          ),
+          tooltip.deactivate,
+        );
+      },
     );
   }
 
@@ -137,11 +136,12 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
   }
 
   void _openLinkDialog(BuildContext context) {
-    showDialog<dynamic>(
+    showDialog<LinkButtonM>(
       context: context,
       builder: (ctx) {
         final link = _getLinkAttributeValue();
-        final index = widget.controller.selection.start;
+        var index = widget.controller.selection.start;
+        var length = widget.controller.selection.end - index;
 
         var text;
         if (link != null) {
@@ -149,17 +149,24 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
           final leaf =
               widget.controller.document.querySegmentLeafNode(index).leaf;
           if (leaf != null) {
-            text = leaf.toPlainText();
+            final range = getLinkRange(leaf);
+            index = range.start;
+            length = range.end - range.start;
+            text = widget.controller.document.getPlainText(
+              index,
+              length,
+            );
           }
         }
 
-        final len = widget.controller.selection.end - index;
-        text ??= len == 0
+        // In case the text remains null
+        text ??= length == 0
             ? ''
             : widget.controller.document.getPlainText(
                 index,
-                len,
+                length,
               );
+
         return LinkStyleDialog(
           dialogTheme: widget.dialogTheme,
           link: link,
@@ -167,22 +174,20 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
         );
       },
     ).then(
-      (value) {
-        if (value != null) _linkSubmitted(value);
+      (link) {
+        if (link != null) _linkSubmitted(link);
       },
     );
   }
 
-  String? _getLinkAttributeValue() {
-    return widget.controller
-        .getSelectionStyle()
-        .attributes?[AttributesM.link.key]
-        ?.value;
-  }
+  String? _getLinkAttributeValue() => widget.controller
+      .getSelectionStyle()
+      .attributes?[AttributesM.link.key]
+      ?.value;
 
-  void _linkSubmitted(dynamic value) {
+  void _linkSubmitted(LinkButtonM value) {
     // text.isNotEmpty && link.isNotEmpty
-    final text = (value as LinkButtonM).text;
+    final text = value.text;
     final link = value.link.trim();
     var index = widget.controller.selection.start;
     var length = widget.controller.selection.end - index;

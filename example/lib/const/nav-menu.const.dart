@@ -66,6 +66,10 @@ const List<NavMenuLinkM> NAV_MENU = [
     route: '/selection-menu',
   ),
   NavMenuLinkM(
+    title: 'Link Menu',
+    route: '/link-menu',
+  ),
+  NavMenuLinkM(
     title: 'Delta sandbox',
     route: '/delta-sandbox',
   ),

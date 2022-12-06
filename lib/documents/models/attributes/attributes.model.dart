@@ -10,6 +10,7 @@ class AttributesM {
   static final font = FontAttributeM(null);
   static final size = SizeAttributeM(null);
   static final link = LinkAttributeM(null);
+  static final removedLink = RemovedLinkAttributeM(null);
   static final color = ColorAttributeM(null);
   static final background = BackgroundAttributeM(null);
   static final placeholder = PlaceholderAttributeM();

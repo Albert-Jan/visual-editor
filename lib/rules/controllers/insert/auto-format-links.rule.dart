@@ -5,6 +5,7 @@ import '../../../documents/models/attributes/styling-attributes.dart';
 import '../../../documents/models/delta/delta.model.dart';
 import '../../models/insert-rule.model.dart';
 
+// TODO Improve doc comment.
 // Applies link format to text segment (which looks like a link) when user inserts space character after it.
 class AutoFormatLinksRule extends InsertRuleM {
   const AutoFormatLinksRule();

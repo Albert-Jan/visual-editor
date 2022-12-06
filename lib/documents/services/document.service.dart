@@ -80,6 +80,7 @@ class DocumentService {
       _cacheMarkers(state, renderers);
       _cacheHighlights(state, renderers);
       _cacheSelectionRectangles(state, renderers);
+      _cacheSelectedLinkRectangles(state, renderers);
       _cacheHeadings(state, renderers);
     });
 
@@ -106,7 +107,9 @@ class DocumentService {
   // TODO Migrate to _linesBlocksService
 
   void _cacheMarkers(
-      EditorState state, List<EditableTextLineWidgetRenderer> renderers) {
+    EditorState state,
+    List<EditableTextLineWidgetRenderer> renderers,
+  ) {
     // Clear the old markers
     state.markers.flushAllMarkers();
 
@@ -124,7 +127,9 @@ class DocumentService {
   // (!) For highlights that span multiple lines of text we are extracting from
   // each renderer only the rectangles belonging to that particular line.
   void _cacheHighlights(
-      EditorState state, List<EditableTextLineWidgetRenderer> renderers) {
+    EditorState state,
+    List<EditableTextLineWidgetRenderer> renderers,
+  ) {
     final highlights = <HighlightM>[];
 
     // Get Rectangles
@@ -155,7 +160,9 @@ class DocumentService {
   // (!) For a selection that span multiple lines of text we are extracting from
   // each renderer only the rectangles belonging to that particular line.
   void _cacheSelectionRectangles(
-      EditorState state, List<EditableTextLineWidgetRenderer> renderers) {
+    EditorState state,
+    List<EditableTextLineWidgetRenderer> renderers,
+  ) {
     // Get Rectangles
     final rectangles = <SelectionRectanglesM>[];
 
@@ -173,7 +180,9 @@ class DocumentService {
   }
 
   void _cacheHeadings(
-      EditorState state, List<EditableTextLineWidgetRenderer> renderers) {
+    EditorState state,
+    List<EditableTextLineWidgetRenderer> renderers,
+  ) {
     // Clear the old headings
     state.headings.removeAllHeadings();
 
@@ -185,5 +194,26 @@ class DocumentService {
         state.headings.addHeading(heading);
       }
     });
+  }
+
+  // TODO Add comment and update comments inside.
+  void _cacheSelectedLinkRectangles(
+    EditorState state,
+    List<EditableTextLineWidgetRenderer> renderers,
+  ) {
+    // Get Rectangles
+    final rectangles = <SelectionRectanglesM>[];
+
+    renderers.forEach((renderer) {
+      // Selection coordinates
+      final lineRectangles = renderer.getSelectedLinkRectangles();
+
+      if (lineRectangles != null) {
+        rectangles.add(lineRectangles);
+      }
+    });
+
+    // Cache in state store
+    state.selectedLink.setSelectedLinkRectangles(rectangles);
   }
 }

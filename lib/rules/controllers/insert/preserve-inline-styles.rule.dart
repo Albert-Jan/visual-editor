@@ -38,22 +38,28 @@ class PreserveInlineStylesRule extends InsertRuleM {
         ..insert(text, attributes);
     }
 
-    attributes.remove(AttributesM.link.key);
-    final delta = DeltaM()
-      ..retain(index + (len ?? 0))
-      ..insert(text, attributes.isEmpty ? null : attributes);
     final next = itr.next();
     final nextAttributes = next.attributes ?? const <String, dynamic>{};
 
-    if (!nextAttributes.containsKey(AttributesM.link.key)) {
-      return delta;
-    }
-
+    // We want to keep link styling for each char typed inside a word that is marked as a link.
     if (attributes[AttributesM.link.key] ==
         nextAttributes[AttributesM.link.key]) {
       return DeltaM()
         ..retain(index + (len ?? 0))
         ..insert(text, attributes);
+    }
+
+    attributes.remove(AttributesM.link.key);
+    final delta = DeltaM()
+      ..retain(index + (len ?? 0))
+      ..insert(
+        text,
+        attributes.isEmpty ? null : attributes,
+      );
+
+    // If the next char after caret doesn't contain link attr return delta
+    if (!nextAttributes.containsKey(AttributesM.link.key)) {
+      return delta;
     }
 
     return delta;

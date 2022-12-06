@@ -50,6 +50,8 @@ class TextLineLinkUtils {
     return linkRecognizers[node]!;
   }
 
+  // === PRIVATE ===
+
   Future<void> _launchUrl(String url) async {
     await launchUrl(Uri.parse(url));
   }

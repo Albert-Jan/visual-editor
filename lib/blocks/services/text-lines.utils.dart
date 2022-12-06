@@ -78,7 +78,7 @@ class TextLinesUtils {
   // The markers could have been extracted once on document init (loading json) and then again at update (marker insert).
   // If the markers are available early, then we can use the same method as for highlights and also have the markers ready earlier in the callstack.
   // So far we did not do this because we realised a bit late in the game what would be the optimal solution.
-  // And also at teh moment it's not that big of a problem. Maybe we will improve in the future.
+  // And also at the moment it's not that big of a problem. Maybe we will improve in the future.
   static List<MarkerM> getMarkersToRender(
     Offset effectiveOffset,
     LineM line,
@@ -220,6 +220,54 @@ class TextLinesUtils {
     });
 
     return isCorrectType;
+  }
+
+  // === SELECTED LINK ===
+
+  static SelectionRectanglesM? getSelectedLinkRectangles(
+    TextSelection textSelection,
+    LineM line,
+    EditorState state,
+    RenderContentProxyBox underlyingText,
+  ) {
+    SelectionRectanglesM? rectangles;
+
+    // Iterate trough all the children of a line.
+    // Children are fragments containing a unique combination of attributes.
+    final lineContainsSelection = _lineContainsSelection(
+      line,
+      textSelection,
+    );
+
+    for (final node in line.children) {
+      final hasLink = node.style.containsKey(AttributesM.link.key);
+
+      if (hasLink) {
+        if (lineContainsSelection) {
+          final selectedNode = node.containsOffset(textSelection.baseOffset);
+          if (selectedNode) {
+            final local = _textSelectionUtils.getLocalSelection(
+              line,
+              textSelection,
+              false,
+            );
+            final docRelPosition = underlyingText.localToGlobal(
+              const Offset(0, 0),
+              ancestor: state.refs.renderer,
+            );
+            final nodeRectangles = getRectanglesFromNode(node, underlyingText);
+
+            rectangles = SelectionRectanglesM(
+              docRelPosition: docRelPosition,
+              rectangles: nodeRectangles,
+              textSelection: local,
+            );
+          }
+        }
+      }
+    }
+
+    return rectangles;
   }
 
   // === DRAW SHAPES ===

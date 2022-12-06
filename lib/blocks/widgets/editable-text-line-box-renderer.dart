@@ -192,6 +192,24 @@ class EditableTextLineBoxRenderer extends EditableBoxRenderer {
     return rectangles;
   }
 
+  // TODO Add comment.
+  SelectionRectanglesM? getSelectedLinkRectangles() {
+    SelectionRectanglesM? rectangles;
+
+    if (_underlyingText != null) {
+
+      // Selected Link
+      rectangles = TextLinesUtils.getSelectedLinkRectangles(
+        _state.refs.editorController.selection,
+        line,
+        _state,
+        _underlyingText!,
+      );
+    }
+
+    return rectangles;
+  }
+
   void setTextSelection(TextSelection selection) {
     if (textSelection == selection) {
       return;

@@ -4,6 +4,7 @@ import '../../../documents/models/attributes/attributes.model.dart';
 import '../../../documents/models/delta/delta.model.dart';
 import '../../models/format-rule.model.dart';
 
+// TODO Improve doc comment.
 // Allows updating link format with collapsed selection.
 class FormatLinkAtCaretPositionRule extends FormatRuleM {
   const FormatLinkAtCaretPositionRule();
@@ -16,6 +17,7 @@ class FormatLinkAtCaretPositionRule extends FormatRuleM {
     Object? data,
     AttributeM? attribute,
   }) {
+    // Do nothing if it's not a link
     if (attribute!.key != AttributesM.link.key || len! > 0) {
       return null;
     }

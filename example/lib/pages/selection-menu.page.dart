@@ -13,7 +13,7 @@ import '../widgets/selection-quick-menu.dart';
 
 // Several interactions can render a selection menu:
 // - Selecting text
-// - Hovering highlights and markers
+// - Tapping highlights and markers
 // The selection menu can actually be any widget you desire.
 // (!) To ensure mobile devices have full access to all the app features,
 // it is recommended to display additional attachments on tap, not on hover.
@@ -162,12 +162,12 @@ class _SelectionMenuPageState extends State<SelectionMenuPage> {
       onSelectionChanged: (selection, rectangles) {
         _hideQuickMenu();
       },
-      onSelectionCompleted: (markers) {
+      onSelectionCompleted: (selectionRectangles) {
         final isCollapsed = _controller?.selection.isCollapsed ?? true;
 
         // Don't render menu for selections that are collapsed (zero chars selected)
         if (!isCollapsed) {
-          _displayQuickMenuOnTextSelection(markers, _scrollController.offset);
+          _displayQuickMenuOnTextSelection(selectionRectangles, _scrollController.offset);
         }
       },
     );

@@ -165,7 +165,6 @@ class TextSelectionService {
     if (selOrigin == null) {
       return;
     }
-
     final selection = state.refs.editorController.selection;
     final toPosition = _linesBlocksService.getPositionForOffset(to, state);
 
@@ -223,6 +222,14 @@ class TextSelectionService {
       selection,
       ChangeSource.LOCAL,
     );
+
+    final isLinkSelected = state.refs.editorController
+        .getSelectionStyle()
+        .attributes
+        ?.containsKey('link') ??
+        false;
+    final isVisible = isLinkSelected ? true  : false;
+    state.linkMenuVisibility.toggleLinkMenu(isVisible);
 
     // Mobiles only
     state.refs.editorState.selectionActionsController?.handlesVisible =
