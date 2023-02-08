@@ -119,6 +119,10 @@ const List<NavMenuCategoryM> NAV_MENU = [
         title: 'Add Elements',
         route: '/add-elements',
       ),
+      NavMenuLinkM(
+        title: 'Search Page',
+        route: '/search',
+      ),
     ],
   ),
 

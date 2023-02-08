@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'controller/pages/add-elements.page.dart';
 import 'controller/pages/headings-validation.page.dart';
 import 'controller/pages/headings.page.dart';
+import 'controller/pages/search-page.dart';
 import 'developer/pages/delta-sandbox.page.dart';
 import 'developer/pages/multiple-editors.page.dart';
 import 'developer/pages/overwrite-controller.page.dart';
@@ -61,6 +62,7 @@ class DemoApp extends StatelessWidget {
           '/headings': (context) => HeadingsPage(),
           '/headings-validation': (context) => HeadingsValidationPage(),
           '/add-elements': (context) => AddElementsPage(),
+          '/search': (context) => SearchPage(),
 
           // Developer
           '/delta-sandbox': (context) => DeltaSandboxPage(),
