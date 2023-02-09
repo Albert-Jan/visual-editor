@@ -41,6 +41,10 @@ class LinkAttributeM extends AttributeM<String?> {
   LinkAttributeM(String? value) : super('link', AttributeScope.INLINE, value);
 }
 
+class RemovedLinkAttributeM extends AttributeM<String?> {
+  RemovedLinkAttributeM(String? value) : super('removed-link', AttributeScope.INLINE, value);
+}
+
 class ColorAttributeM extends AttributeM<String?> {
   ColorAttributeM(String? value) : super('color', AttributeScope.INLINE, value);
 }

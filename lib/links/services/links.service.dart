@@ -59,6 +59,10 @@ class LinksService {
     return linkRecognizers[node]!;
   }
 
+  // When the author attempt to edit a link we need to edit the entire link
+  // length regardless of how much from the link was selected.
+  // The link range is extracted by analysing which neighbouring nodes contain the same link attribute.
+  // Once we know the range of a link we can then apply the changes on the entire link, not only on the selected part.
   TextRange getLinkRange(NodeM node) {
     var start = _nodeUtils.getDocumentOffset(node);
     var length = node.charsNum;

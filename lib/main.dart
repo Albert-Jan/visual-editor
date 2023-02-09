@@ -3,17 +3,25 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:i18n_extension/i18n_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:visual_editor/shared/widgets/triangle-clipper.dart';
+import 'package:visual_editor/toolbar/widgets/buttons/link-style-button.dart';
 
 import 'controller/controllers/editor-controller.dart';
 import 'cursor/controllers/cursor.controller.dart';
 import 'cursor/controllers/floating-cursor.controller.dart';
 import 'cursor/services/caret.service.dart';
+import 'doc-tree/services/coordinates.service.dart';
 import 'doc-tree/services/doc-tree.service.dart';
 import 'document/controllers/document.controller.dart';
+import 'document/models/attributes/attributes.model.dart';
+import 'document/models/attributes/styling-attributes.dart';
 import 'document/models/document.model.dart';
+import 'document/services/nodes/node.utils.dart';
 import 'editor/models/editor-cfg.model.dart';
 import 'editor/models/platform-dependent-styles.model.dart';
 import 'editor/services/editor.service.dart';
@@ -35,6 +43,7 @@ import 'selection/services/selection.service.dart';
 import 'shared/state/editor-state-receiver.dart';
 import 'shared/state/editor.state.dart';
 import 'styles/services/styles-cfg.service.dart';
+import 'styles/services/styles.service.dart';
 
 // There are 2 constructors available, one for controlling all the settings of the editor in precise detail.
 // The other one is the basic init that will spare you the pain of having to comb trough all the props.
@@ -126,6 +135,8 @@ class VisualEditorState extends State<VisualEditor>
   late final StylesCfgService _stylesCfgService;
   late final GuiService _guiService;
   late final EmbedsService _embedsService;
+  late final StylesService _stylesService;
+  late final CoordinatesService _coordinatesService;
 
   // Controllers
   SelectionHandlesController? selectionHandlesController;
@@ -158,6 +169,8 @@ class VisualEditorState extends State<VisualEditor>
     _stylesCfgService = StylesCfgService(state);
     _guiService = GuiService(state);
     _embedsService = EmbedsService(state);
+    _stylesService = StylesService(state);
+    _coordinatesService = CoordinatesService(state);
 
     super.initState();
     _cacheWidgetRef();
@@ -179,19 +192,23 @@ class VisualEditorState extends State<VisualEditor>
     // If doc is empty override with a placeholder
     final document = _docTreeService.getDocOrPlaceholder();
 
-    final editorTree = _conditionalPreventKeyPropagationToParentIfWeb(
-      child: _i18n(
-        child: _textGestures(
-          child: _hotkeysActions(
-            child: _focusField(
-              child: _constrainedBox(
-                child: _conditionalScrollable(
-                  child: _selectionToolbarTarget(
-                    child: _editorRenderer(
-                      document: document,
-                      // This is where the document elements are rendered
-                      children: _docTreeService.getDocumentTree(
-                        document: document,
+    final editorTree = Stack(
+      children: [
+        _conditionalPreventKeyPropagationToParentIfWeb(
+          child: _i18n(
+            child: _textGestures(
+              child: _hotkeysActions(
+                child: _focusField(
+                  child: _constrainedBox(
+                    child: _conditionalScrollable(
+                      child: _selectionToolbarTarget(
+                        child: _editorRenderer(
+                          document: document,
+                          // This is where the document elements are rendered
+                          children: _docTreeService.getDocumentTree(
+                            document: document,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -200,8 +217,13 @@ class VisualEditorState extends State<VisualEditor>
             ),
           ),
         ),
-      ),
+        _linkMenu(),
+      ],
     );
+
+    // (!) Used to update the editor after the users changes selection, in order to
+    // position link menu.
+    _onBuildComplete();
 
     // (!) Calling after the widget tree is built ensures that we schedule the
     // onBuildComplete callback as the last addPostFrameCallback() to execute.
@@ -412,6 +434,13 @@ class VisualEditorState extends State<VisualEditor>
 
   // === PRIVATE ===
 
+  // TODO Replace setState with refresh, I think. Also explain better why we need it.
+  void _onBuildComplete() {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      setState(() {});
+    });
+  }
+
   Widget _i18n({required Widget child}) => I18n(
         initialLocale: widget.config.locale,
         child: child,
@@ -487,6 +516,252 @@ class VisualEditorState extends State<VisualEditor>
             ),
       child: child,
     );
+  }
+
+  Widget _linkMenu() {
+    // TODO Move from here
+    var offset = Offset.infinite;
+    final selectedLinkRectangles =
+        widget._state.selectedLink.selectedLinkRectangles;
+    final isSelection = selectedLinkRectangles.isNotEmpty;
+
+    if (isSelection) {
+      final hasRectangles = selectedLinkRectangles[0].rectangles.isNotEmpty;
+
+      if (hasRectangles) {
+        final isLinkSelected =
+            _stylesService.getSelectionStyle().attributes.containsKey('link');
+
+        if (isLinkSelected) {
+          final rectangles = selectedLinkRectangles[0].rectangles[0];
+          final lineOffset = selectedLinkRectangles[0].docRelPosition;
+          final scrollControllerOffset =
+              widget._state.refs.scrollController.offset;
+
+          offset = _getOffsetForLinkMenu(
+            rectangles,
+            lineOffset,
+            scrollControllerOffset,
+          );
+        }
+      }
+    }
+
+    return Positioned(
+      top: offset.dy,
+      left: offset.dx,
+      child: Stack(
+        children: [
+          _content(),
+          Positioned(
+            top: 6.9,
+            left: 0,
+            child: _tooltipTriangle(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _content() => Container(
+        padding: EdgeInsets.only(top: 17.5),
+        color: Colors.transparent,
+        child: _menuContainer(
+          children: [
+            _link(),
+            _removeLinkBtn(),
+            _editLinkBtn(),
+            _copyLinkToClipboardBtn(),
+          ],
+        ),
+      );
+
+  Widget _removeLinkBtn() => Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _removeLink,
+          child: Container(
+            padding: EdgeInsets.all(6),
+            child: Icon(
+              Icons.link_off,
+            ),
+          ),
+        ),
+      );
+
+  // TODO After Adrian pushes the big refactor commit on main, see if he moved
+  // the logic from the button which is responsible for editing the text, if not,
+  // move that into a service and after that create your button which does not look
+  // the same as the one from the toolbar.
+  Widget _editLinkBtn() => LinkStyleButton(
+        controller: widget.controller,
+        buttonsSpacing: 10,
+      );
+
+  // TODO Add functionality after adding the commit (158 I think) responsible for
+  // keyboard shortcuts on master, you need the code from there.
+  Widget _copyLinkToClipboardBtn() => Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {},
+          child: Container(
+            padding: EdgeInsets.all(6),
+            child: Icon(
+              Icons.copy,
+            ),
+          ),
+        ),
+      );
+
+  Widget _link() => InkWell(
+        onTap: _launchUrl,
+        // Add underline on hover
+        onHover: (_) {},
+        child: Padding(
+          padding: EdgeInsets.only(right: 10),
+          child: Text(
+            _getLinkAttributeValue() ?? 'No Link',
+            style: TextStyle(
+              color: Colors.blue,
+            ),
+          ),
+        ),
+      );
+
+  Future<void> _launchUrl() async {
+    await launchUrl(Uri.parse(_getLinkAttributeValue()!));
+  }
+
+  Widget _tooltipTriangle() => Stack(
+        children: [
+          Container(
+            margin: EdgeInsets.only(left: 10),
+            child: ClipPath(
+              clipper: TriangleClipper(),
+              child: Container(
+                color: Color(0xffcfcdcd),
+                height: 12,
+                width: 20,
+              ),
+            ),
+          ),
+          Positioned(
+            left: (12 - 11.5) / 2,
+            right: (12 - 11.5) / 2,
+            bottom: -1.5,
+            child: Container(
+              margin: EdgeInsets.only(left: 10),
+              child: ClipPath(
+                clipper: TriangleClipper(),
+                child: Container(
+                  color: Colors.white,
+                  height: 11.5,
+                  width: 19,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+
+  // TODO Add explanatory comment
+  // TODO There's a bug when trying to remove a url (www.google.com) because it is
+  // being applied again as a link, we need to do something to stop that.
+  void _removeLink() {
+    var index = widget.controller.selection.start;
+    var length = widget.controller.selection.end - index;
+
+    print('YOOOOOOOOOOOOOOOO $index $length');
+    if (_getLinkAttributeValue() != null) {
+      // TODO This might be the problem which cause the link to not be removed.
+      // Se how it was done on the previous commit.
+      final leaf = state.refs.documentController.queryNode(index).leaf;
+      if (leaf != null) {
+        print('ddddddddddddddddddddd $leaf');
+        final range = widget.controller.getLinkRange(leaf);
+        index = range.start;
+        length = range.end - range.start;
+      }
+    }
+
+    final link =
+        state.refs.documentController.getPlainTextAtRange(index, length);
+
+    widget.controller.replaceText(
+      index,
+      length,
+      link,
+      null,
+    );
+
+    widget.controller.formatSelectedText(
+      index,
+      link.length,
+      RemovedLinkAttributeM(link),
+    );
+  }
+
+  Widget _menuContainer({required List<Widget> children}) => Container(
+        padding: EdgeInsets.symmetric(
+          vertical: 7,
+          horizontal: 14,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 5,
+              offset: Offset(5, 5),
+              blurStyle: BlurStyle.solid,
+              spreadRadius: -5,
+            ),
+          ],
+          borderRadius: BorderRadius.all(
+            Radius.circular(4),
+          ),
+          border: Border.all(
+            color: Color(0xffcfcdcd),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: children,
+        ),
+      );
+
+  String? _getLinkAttributeValue() => _stylesService
+      .getSelectionStyle()
+      .attributes[AttributesM.link.key]
+      ?.value;
+
+  // TODO Add comments to explain how the placement is done and where we want it placed.
+  // TODO Verify the lineOffset null safety in this code.
+  Offset _getOffsetForLinkMenu(
+    TextBox rectangle,
+    Offset? lineOffset,
+    double scrollOffset,
+  ) {
+    final hLeftPoint = rectangle.left;
+    const triangleTooltipMargin = 10;
+
+    final extentOffset = widget.controller.selection.extentOffset;
+
+    final childAtOffset = _coordinatesService.childAtOffset(lineOffset!);
+    final nodeUtils = NodeUtils();
+    final docOffset = nodeUtils.getDocumentOffset(childAtOffset.container);
+
+    final lineHeight = childAtOffset.preferredLineHeight(
+      TextPosition(offset: extentOffset - docOffset),
+    );
+
+    // Menu Position
+    final offset = Offset(
+      hLeftPoint - triangleTooltipMargin,
+      lineOffset.dy + lineHeight + rectangle.top,
+    );
+
+    return offset;
   }
 
   // Used by the selection toolbar/controls to position itself in the right location
@@ -730,5 +1005,16 @@ class VisualEditorState extends State<VisualEditor>
     if (onScroll != null) {
       onScroll();
     }
+  }
+
+  @override
+  void didChangeInputControl(
+      TextInputControl? oldControl, TextInputControl? newControl) {
+    // TODO: implement didChangeInputControl
+  }
+
+  @override
+  void performSelector(String selectorName) {
+    // TODO: implement performSelector
   }
 }

@@ -11,6 +11,7 @@ import '../../editor/services/editor.service.dart';
 import '../../editor/services/run-build.service.dart';
 import '../../inputs/services/keyboard.service.dart';
 import '../../shared/state/editor.state.dart';
+import '../../styles/services/styles.service.dart';
 import 'selection-handles.service.dart';
 import 'selection-renderer.service.dart';
 
